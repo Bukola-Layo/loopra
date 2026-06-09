@@ -45,7 +45,11 @@ function LoginContent() {
       return;
     }
 
-    router.push("/dashboard");
+    if (searchParams.get("registered") === "true") {
+      router.push("/onboarding");
+    } else {
+      router.push("/dashboard");
+    }
     router.refresh();
   }
 

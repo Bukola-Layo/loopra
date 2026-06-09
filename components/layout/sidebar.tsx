@@ -68,13 +68,12 @@ export function Sidebar() {
     >
       <div className="flex h-16 items-center justify-between px-4">
         {!collapsed && (
-          <Link href="/dashboard" className="flex items-center gap-2">
-            <span
-              className="text-lg font-bold"
-              style={{ color: "var(--color-role-primary)" }}
-            >
-              Loopra
-            </span>
+          <Link href="/dashboard">
+            <img
+              src="/images/illustrations/loopra-logo.svg"
+              alt="Loopra"
+              className="h-7 w-auto"
+            />
           </Link>
         )}
         <Button
