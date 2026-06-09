@@ -19,9 +19,9 @@
   --color-accent-5: #2cadc0ff;
   --color-background: #fafafaff;
   --color-error-0: #d00416ff;
-  --color-error-1: #fb3748ff;
+  --color-error-1: #ffffff;
   --color-success-0: #1fc16b1a;
-  --color-success-1: #84ebb4ff;
+  --color-success-1: rgb(244, 248, 246);
   --color-success-2: #1fc16bff;
   --color-warning: #ffdb43ff;
 }

@@ -86,13 +86,14 @@ function LoginContent() {
             placeholder="you@example.com"
             required
             autoComplete="email"
+            autoFocus
           />
         </div>
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <Label htmlFor="password">Password</Label>
             <Link
-              href="/auth/forgot-password"
+              href="/forgot-password"
               className="text-xs text-primary hover:underline"
             >
               Forgot password?

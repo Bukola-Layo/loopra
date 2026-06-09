@@ -74,32 +74,33 @@ export async function POST(req: NextRequest) {
     });
 
     // Send verification email
-    const verifyUrl = `${process.env.NEXT_PUBLIC_APP_URL}/auth/verify-email?token=${verificationToken}&email=${encodeURIComponent(email)}`;
+    const verifyUrl = `${process.env.NEXT_PUBLIC_APP_URL}/verify-email?token=${verificationToken}&email=${encodeURIComponent(email)}`;
 
-    try {
-      await resend.emails.send({
-        from: "noreply@loopra.com",
-        to: email,
-        subject: "Verify your Loopra email",
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px;">
-            <h2>Welcome to Loopra, ${firstName}!</h2>
-            <p>Thanks for signing up! Click the link below to verify your email address and get started.</p>
-            <p>
-              <a href="${verifyUrl}" style="background-color: #3b82f6; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">
-                Verify Email
-              </a>
-            </p>
-            <p>Or copy and paste this link in your browser:</p>
-            <p style="word-break: break-all;">${verifyUrl}</p>
-            <p>This link expires in 24 hours.</p>
-            <p>If you didn't create this account, you can ignore this email.</p>
-          </div>
-        `,
-      });
-    } catch (emailError) {
-      console.error("Failed to send verification email:", emailError);
-      // Don't fail the signup if email fails to send
+    if (process.env.RESEND_API_KEY && !process.env.RESEND_API_KEY.startsWith("re_xxxx")) {
+      try {
+        await resend.emails.send({
+          from: "noreply@loopra.com",
+          to: email,
+          subject: "Verify your Loopra email",
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px;">
+              <h2>Welcome to Loopra, ${firstName}!</h2>
+              <p>Thanks for signing up! Click the link below to verify your email address and get started.</p>
+              <p>
+                <a href="${verifyUrl}" style="background-color: #3b82f6; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">
+                  Verify Email
+                </a>
+              </p>
+              <p>Or copy and paste this link in your browser:</p>
+              <p style="word-break: break-all;">${verifyUrl}</p>
+              <p>This link expires in 24 hours.</p>
+              <p>If you didn't create this account, you can ignore this email.</p>
+            </div>
+          `,
+        });
+      } catch (emailError) {
+        console.error("Failed to send verification email:", emailError);
+      }
     }
 
     return NextResponse.json(

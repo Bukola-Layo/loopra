@@ -33,7 +33,7 @@ function ResetPasswordContent() {
           >
             This password reset link is invalid. Please request a new one.
           </div>
-          <Link href="/auth/forgot-password" className="block w-full">
+          <Link href="/forgot-password" className="block w-full">
             <Button className="w-full">Request new link</Button>
           </Link>
         </div>

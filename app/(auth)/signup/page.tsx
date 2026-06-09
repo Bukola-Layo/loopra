@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { AuthLayout } from "@/components/layout/auth-layout";
@@ -8,10 +8,27 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
+function getPasswordStrength(password: string): { score: number; label: string; color: string } {
+  let score = 0;
+  if (password.length >= 8) score++;
+  if (password.length >= 12) score++;
+  if (/[a-z]/.test(password)) score++;
+  if (/[A-Z]/.test(password)) score++;
+  if (/[0-9]/.test(password)) score++;
+  if (/[^a-zA-Z0-9]/.test(password)) score++;
+
+  if (score <= 2) return { score, label: "Weak", color: "var(--color-role-error)" };
+  if (score <= 4) return { score, label: "Medium", color: "var(--color-role-warning)" };
+  return { score, label: "Strong", color: "var(--color-role-success)" };
+}
+
 export default function SignupPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [password, setPassword] = useState("");
+
+  const strength = useMemo(() => getPasswordStrength(password), [password]);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -67,6 +84,7 @@ export default function SignupPage() {
               name="firstName"
               placeholder="John"
               required
+              autoFocus
             />
           </div>
           <div className="space-y-2">
@@ -100,7 +118,25 @@ export default function SignupPage() {
             required
             minLength={8}
             autoComplete="new-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
           />
+          {password.length > 0 && (
+            <div className="space-y-1">
+              <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
+                <div
+                  className="h-full rounded-full transition-all duration-300"
+                  style={{
+                    width: `${(strength.score / 6) * 100}%`,
+                    backgroundColor: strength.color,
+                  }}
+                />
+              </div>
+              <p className="text-xs" style={{ color: strength.color }}>
+                {strength.label}
+              </p>
+            </div>
+          )}
         </div>
         <Button type="submit" className="w-full" disabled={isLoading}>
           {isLoading ? "Creating account..." : "Create account"}
