@@ -1,0 +1,98 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { StatusBadge } from "@/components/shared/status-badge";
+import { EmptyState } from "@/components/shared/empty-state";
+import { GitFork, Plus, Play, Pause, ChevronRight } from "lucide-react";
+import Link from "next/link";
+
+type Loop = {
+  id: string;
+  name: string;
+  description: string | null;
+  status: string;
+  trigger: { type: string } | null;
+  actions: Array<{ id: string; type: string; sequence: number }>;
+  createdAt: string;
+};
+
+export default function LoopsPage() {
+  const [loops, setLoops] = useState<Loop[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/loops")
+      .then((r) => r.json())
+      .then((res) => setLoops(res.loops ?? []))
+      .finally(() => setLoading(false));
+  }, []);
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Loops</h1>
+          <p className="text-muted-foreground mt-1">
+            Build automation workflows triggered by subscriber actions.
+          </p>
+        </div>
+        <Link href="/dashboard/loops/new">
+          <Button className="gap-2">
+            <Plus className="h-4 w-4" />
+            Create loop
+          </Button>
+        </Link>
+      </div>
+
+      {loading ? (
+        <div className="space-y-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-24 w-full" />
+          ))}
+        </div>
+      ) : loops.length === 0 ? (
+        <EmptyState
+          icon={<GitFork className="h-8 w-8" />}
+          title="No loops yet"
+          description="Create your first automation loop to automatically engage with your subscribers."
+          action={{
+            label: "Create loop",
+            onClick: () => {},
+          }}
+        />
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2">
+          {loops.map((loop) => (
+            <Link
+              key={loop.id}
+              href={`/dashboard/loops/${loop.id}`}
+              className="rounded-lg border p-5 hover:border-primary/50 hover:shadow-sm transition-all"
+            >
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <GitFork className="h-5 w-5 text-muted-foreground" />
+                  <h3 className="font-medium">{loop.name}</h3>
+                </div>
+                <StatusBadge status={loop.status} />
+              </div>
+              {loop.description && (
+                <p className="text-xs text-muted-foreground mb-3 line-clamp-2">
+                  {loop.description}
+                </p>
+              )}
+              <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                <Badge variant="outline" className="text-xs">
+                  {loop.trigger?.type?.replace(/_/g, " ") ?? "No trigger"}
+                </Badge>
+                <span>{loop.actions?.length ?? 0} actions</span>
+              </div>
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}

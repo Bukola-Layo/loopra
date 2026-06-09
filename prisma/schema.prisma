@@ -1,0 +1,515 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum MemberRole {
+  owner
+  admin
+  member
+}
+
+enum SubscriberStatus {
+  active
+  unsubscribed
+  bounced
+}
+
+enum CampaignStatus {
+  draft
+  scheduled
+  sending
+  sent
+}
+
+enum ContentType {
+  html
+  markdown
+}
+
+enum LoopStatus {
+  draft
+  active
+  paused
+}
+
+enum LoopTriggerType {
+  form_submission
+  tag_added
+  subscriber_created
+  campaign_opened
+  campaign_clicked
+}
+
+enum LoopActionType {
+  send_email
+  delay
+  apply_tag
+  remove_tag
+  condition
+  webhook
+}
+
+enum ExecutionStatus {
+  pending
+  running
+  completed
+  failed
+}
+
+enum SubscriptionStatus {
+  active
+  cancelled
+  past_due
+}
+
+enum PaymentStatus {
+  pending
+  success
+  failed
+  refunded
+}
+
+model User {
+  id            String   @id @default(uuid()) @db.Uuid
+  email         String   @unique
+  password      String
+  firstName     String?
+  lastName      String?
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  accounts         Account[]
+  sessions         Session[]
+  workspaces       Workspace[]
+  workspaceMembers WorkspaceMember[]
+}
+
+model Account {
+  id                String @id @default(uuid()) @db.Uuid
+  userId            String @db.Uuid
+  type              String
+  provider          String
+  providerAccountId String
+  refreshToken      String? @map("refresh_token")
+  accessToken       String? @map("access_token")
+  expiresAt         Int?    @map("expires_at")
+  tokenType         String? @map("token_type")
+  scope             String?
+  idToken           String? @map("id_token")
+  sessionState      String? @map("session_state")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(uuid()) @db.Uuid
+  sessionToken String   @unique
+  userId       String   @db.Uuid
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  id        String   @id @default(uuid()) @db.Uuid
+  email     String   @unique
+  token     String   @unique
+  expires   DateTime
+  createdAt DateTime @default(now())
+
+  @@map("verification_tokens")
+}
+
+model PasswordResetToken {
+  id        String   @id @default(uuid()) @db.Uuid
+  email     String   @unique
+  token     String   @unique
+  expires   DateTime
+  createdAt DateTime @default(now())
+
+  @@map("password_reset_tokens")
+}
+
+model Workspace {
+  id        String   @id @default(uuid()) @db.Uuid
+  ownerId   String   @db.Uuid
+  name      String
+  logo      String?
+  domain    String?  @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  owner            User              @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  members          WorkspaceMember[]
+  subscribers      Subscriber[]
+  segments         Segment[]
+  forms            Form[]
+  campaigns        Campaign[]
+  loops            Loop[]
+  templates        Template[]
+  subscriptions    Subscription[]
+  analyticsEvents  AnalyticsEvent[]
+  analyticsSummary AnalyticsSummary[]
+}
+
+model WorkspaceMember {
+  id          String     @id @default(uuid()) @db.Uuid
+  workspaceId String     @db.Uuid
+  userId      String     @db.Uuid
+  role        MemberRole @default(member)
+  joinedAt    DateTime   @default(now())
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, userId])
+  @@map("workspace_members")
+}
+
+model Subscriber {
+  id            String           @id @default(uuid()) @db.Uuid
+  workspaceId   String           @db.Uuid
+  email         String
+  firstName     String?
+  lastName      String?
+  status        SubscriberStatus @default(active)
+  customFields  Json?
+  lastEngagedAt DateTime?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  workspace       Workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  tags            SubscriberTag[]
+  segmentMembers  SegmentMember[]
+  campaignSends   CampaignSend[]
+  campaignEvents  CampaignEvent[]
+  loopExecutions  LoopExecution[]
+  formSubmissions FormSubmission[]
+
+  @@unique([workspaceId, email])
+  @@index([workspaceId, status])
+  @@map("subscribers")
+}
+
+model SubscriberTag {
+  id           String @id @default(uuid()) @db.Uuid
+  subscriberId String @db.Uuid
+  tag          String
+
+  subscriber Subscriber @relation(fields: [subscriberId], references: [id], onDelete: Cascade)
+
+  @@index([subscriberId, tag])
+  @@map("subscriber_tags")
+}
+
+model Segment {
+  id          String   @id @default(uuid()) @db.Uuid
+  workspaceId String   @db.Uuid
+  name        String
+  criteria    Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  workspace Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  members   SegmentMember[]
+
+  @@index([workspaceId])
+  @@map("segments")
+}
+
+model SegmentMember {
+  id           String @id @default(uuid()) @db.Uuid
+  segmentId    String @db.Uuid
+  subscriberId String @db.Uuid
+
+  segment    Segment    @relation(fields: [segmentId], references: [id], onDelete: Cascade)
+  subscriber Subscriber @relation(fields: [subscriberId], references: [id], onDelete: Cascade)
+
+  @@index([segmentId, subscriberId])
+  @@map("segment_members")
+}
+
+model Form {
+  id          String   @id @default(uuid()) @db.Uuid
+  workspaceId String   @db.Uuid
+  name        String
+  description String?
+  settings    Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  workspace   Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  fields      FormField[]
+  submissions FormSubmission[]
+
+  @@index([workspaceId])
+  @@map("forms")
+}
+
+model FormField {
+  id         String  @id @default(uuid()) @db.Uuid
+  formId     String  @db.Uuid
+  label      String
+  type       String
+  required   Boolean @default(false)
+  position   Int
+  validation Json?
+  options    Json?
+
+  form Form @relation(fields: [formId], references: [id], onDelete: Cascade)
+
+  @@map("form_fields")
+}
+
+model FormSubmission {
+  id           String   @id @default(uuid()) @db.Uuid
+  formId       String   @db.Uuid
+  subscriberId String?  @db.Uuid
+  data         Json?
+  ipAddress    String?
+  timestamp    DateTime @default(now())
+
+  form       Form        @relation(fields: [formId], references: [id], onDelete: Cascade)
+  subscriber Subscriber? @relation(fields: [subscriberId], references: [id])
+
+  @@map("form_submissions")
+}
+
+model Campaign {
+  id            String         @id @default(uuid()) @db.Uuid
+  workspaceId   String         @db.Uuid
+  title         String
+  subject       String
+  content       String?
+  contentType   ContentType    @default(html)
+  templateId    String?        @db.Uuid
+  status        CampaignStatus @default(draft)
+  sendAt        DateTime?
+  sentAt        DateTime?
+  recipientCount Int           @default(0)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  workspace Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  sends     CampaignSend[]
+  events    CampaignEvent[]
+
+  @@index([workspaceId, status])
+  @@map("campaigns")
+}
+
+model CampaignSend {
+  id           String    @id @default(uuid()) @db.Uuid
+  campaignId   String    @db.Uuid
+  subscriberId String    @db.Uuid
+  sentAt       DateTime?
+  openedAt     DateTime?
+  clickedAt    DateTime?
+  bounced      Boolean   @default(false)
+  unsubscribed Boolean   @default(false)
+
+  campaign   Campaign   @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  subscriber Subscriber @relation(fields: [subscriberId], references: [id], onDelete: Cascade)
+
+  @@index([campaignId, subscriberId])
+  @@map("campaign_sends")
+}
+
+model CampaignEvent {
+  id           String   @id @default(uuid()) @db.Uuid
+  campaignId   String   @db.Uuid
+  subscriberId String   @db.Uuid
+  eventType    String
+  linkClicked  String?
+  metadata     Json?
+  timestamp    DateTime @default(now())
+
+  campaign   Campaign   @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  subscriber Subscriber @relation(fields: [subscriberId], references: [id], onDelete: Cascade)
+
+  @@index([campaignId, eventType])
+  @@map("campaign_events")
+}
+
+model Loop {
+  id          String     @id @default(uuid()) @db.Uuid
+  workspaceId String     @db.Uuid
+  name        String
+  description String?
+  status      LoopStatus @default(draft)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  workspace   Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  trigger     LoopTrigger?
+  actions     LoopAction[]
+  executions  LoopExecution[]
+
+  @@index([workspaceId, status])
+  @@map("loops")
+}
+
+model LoopTrigger {
+  id        String          @id @default(uuid()) @db.Uuid
+  loopId    String          @unique @db.Uuid
+  type      LoopTriggerType
+  config    Json?
+  createdAt DateTime        @default(now())
+
+  loop Loop @relation(fields: [loopId], references: [id], onDelete: Cascade)
+
+  @@map("loop_triggers")
+}
+
+model LoopAction {
+  id        String         @id @default(uuid()) @db.Uuid
+  loopId    String         @db.Uuid
+  sequence  Int
+  type      LoopActionType
+  config    Json?
+  createdAt DateTime       @default(now())
+
+  loop     Loop              @relation(fields: [loopId], references: [id], onDelete: Cascade)
+  eventLogs LoopEventLog[]
+
+  @@map("loop_actions")
+}
+
+model LoopExecution {
+  id           String          @id @default(uuid()) @db.Uuid
+  loopId       String          @db.Uuid
+  subscriberId String          @db.Uuid
+  triggeredAt  DateTime        @default(now())
+  startedAt    DateTime?
+  completedAt  DateTime?
+  status       ExecutionStatus @default(pending)
+  lastError    String?
+
+  loop      Loop           @relation(fields: [loopId], references: [id], onDelete: Cascade)
+  subscriber Subscriber    @relation(fields: [subscriberId], references: [id], onDelete: Cascade)
+  eventLogs  LoopEventLog[]
+
+  @@index([loopId, subscriberId, status])
+  @@map("loop_executions")
+}
+
+model LoopEventLog {
+  id          String          @id @default(uuid()) @db.Uuid
+  executionId String          @db.Uuid
+  actionId    String          @db.Uuid
+  status      ExecutionStatus @default(pending)
+  result      Json?
+  error       String?
+  timestamp   DateTime        @default(now())
+
+  execution LoopExecution @relation(fields: [executionId], references: [id], onDelete: Cascade)
+  action    LoopAction    @relation(fields: [actionId], references: [id], onDelete: Cascade)
+
+  @@index([executionId])
+  @@map("loop_event_logs")
+}
+
+model Template {
+  id          String   @id @default(uuid()) @db.Uuid
+  workspaceId String   @db.Uuid
+  name        String
+  category    String?
+  content     String?
+  thumbnail   String?
+  isPublished Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@map("templates")
+}
+
+model SubscriptionPlan {
+  id           String   @id @default(uuid()) @db.Uuid
+  name         String
+  slug         String   @unique
+  price        Decimal  @db.Decimal(10, 2)
+  currency     String   @default("USD")
+  billingCycle String   @default("monthly")
+  features     Json?
+  limits       Json?
+  createdAt    DateTime @default(now())
+
+  subscriptions Subscription[]
+
+  @@map("subscription_plans")
+}
+
+model Subscription {
+  id                String             @id @default(uuid()) @db.Uuid
+  workspaceId       String             @db.Uuid
+  planId            String             @db.Uuid
+  status            SubscriptionStatus @default(active)
+  currentPeriodStart DateTime          @default(now())
+  currentPeriodEnd   DateTime?
+  cancelledAt       DateTime?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  workspace Workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  plan      SubscriptionPlan  @relation(fields: [planId], references: [id])
+  payments  Payment[]
+
+  @@index([workspaceId, status])
+  @@map("subscriptions")
+}
+
+model Payment {
+  id                   String        @id @default(uuid()) @db.Uuid
+  subscriptionId       String        @db.Uuid
+  amount               Decimal       @db.Decimal(10, 2)
+  currency             String        @default("USD")
+  status               PaymentStatus @default(pending)
+  flutterwaveReference String?       @unique
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+
+  subscription Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@map("payments")
+}
+
+model AnalyticsEvent {
+  id          String   @id @default(uuid()) @db.Uuid
+  workspaceId String   @db.Uuid
+  eventType   String
+  resourceId  String?  @db.Uuid
+  resourceType String?
+  metadata    Json?
+  timestamp   DateTime @default(now())
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, eventType, timestamp])
+  @@map("analytics_events")
+}
+
+model AnalyticsSummary {
+  id          String   @id @default(uuid()) @db.Uuid
+  workspaceId String   @db.Uuid
+  date        DateTime @db.Date
+  metric      String
+  value       Decimal  @db.Decimal(12, 2)
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, date, metric])
+  @@map("analytics_summaries")
+}

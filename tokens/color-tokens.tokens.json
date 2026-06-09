@@ -1,0 +1,173 @@
+{
+  "color": {
+    "primary color": {
+      "0": {
+        "type": "color",
+        "value": "#dd2d4a1a",
+        "blendMode": "normal"
+      },
+      "1": {
+        "type": "color",
+        "value": "#f27b8cff",
+        "blendMode": "normal"
+      },
+      "2": {
+        "type": "color",
+        "value": "#ec3952ff",
+        "blendMode": "normal"
+      },
+      "3": {
+        "type": "color",
+        "value": "#ca132dff",
+        "blendMode": "normal"
+      },
+      "4": {
+        "type": "color",
+        "value": "#880d1eff",
+        "blendMode": "normal"
+      },
+      "5": {
+        "type": "color",
+        "value": "#500812ff",
+        "blendMode": "normal"
+      },
+      "description": "",
+      "extensions": {
+        "org.lukasoppermann.figmaDesignTokens": {
+          "styleId": "S:ccf3e618c5580cd048f828565819b56acd036a35,",
+          "exportKey": "color"
+        }
+      }
+    },
+    "secondary": {
+      "0": {
+        "type": "color",
+        "value": "#dd2d4a1a",
+        "blendMode": "normal"
+      },
+      "1": {
+        "type": "color",
+        "value": "#e87386ff",
+        "blendMode": "normal"
+      },
+      "2": {
+        "type": "color",
+        "value": "#dd2d4aff",
+        "blendMode": "normal"
+      },
+      "description": "",
+      "extensions": {
+        "org.lukasoppermann.figmaDesignTokens": {
+          "styleId": "S:4b95c66dc1295e90ecc21c50de8f78decaa1a8c5,",
+          "exportKey": "color"
+        }
+      }
+    },
+    "accent": {
+      "0": {
+        "type": "color",
+        "value": "#cbeef380",
+        "blendMode": "normal"
+      },
+      "1": {
+        "type": "color",
+        "value": "#cbeef31a",
+        "blendMode": "normal"
+      },
+      "2": {
+        "type": "color",
+        "value": "#cbeef3ff",
+        "blendMode": "normal"
+      },
+      "3": {
+        "type": "color",
+        "value": "#92dbe6ff",
+        "blendMode": "normal"
+      },
+      "4": {
+        "type": "color",
+        "value": "#59c9d9ff",
+        "blendMode": "normal"
+      },
+      "5": {
+        "type": "color",
+        "value": "#2cadc0ff",
+        "blendMode": "normal"
+      },
+      "description": "",
+      "extensions": {
+        "org.lukasoppermann.figmaDesignTokens": {
+          "styleId": "S:e51600b0decb89b5dfa41cfb16dffe4378bcec62,",
+          "exportKey": "color"
+        }
+      }
+    },
+    "background": {
+      "description": "",
+      "type": "color",
+      "value": "#fafafaff",
+      "blendMode": "normal",
+      "extensions": {
+        "org.lukasoppermann.figmaDesignTokens": {
+          "styleId": "S:f5c40eaef6da8cb7da6c1060e2d245c2ed2607c3,",
+          "exportKey": "color"
+        }
+      }
+    },
+    "error": {
+      "0": {
+        "type": "color",
+        "value": "#d00416ff",
+        "blendMode": "normal"
+      },
+      "1": {
+        "type": "color",
+        "value": "#fb3748ff",
+        "blendMode": "normal"
+      },
+      "description": "",
+      "extensions": {
+        "org.lukasoppermann.figmaDesignTokens": {
+          "styleId": "S:cbe4d0b11e09909c7fdb6c3de948732730f94c80,",
+          "exportKey": "color"
+        }
+      }
+    },
+    "success": {
+      "0": {
+        "type": "color",
+        "value": "#1fc16b1a",
+        "blendMode": "normal"
+      },
+      "1": {
+        "type": "color",
+        "value": "#84ebb4ff",
+        "blendMode": "normal"
+      },
+      "2": {
+        "type": "color",
+        "value": "#1fc16bff",
+        "blendMode": "normal"
+      },
+      "description": "",
+      "extensions": {
+        "org.lukasoppermann.figmaDesignTokens": {
+          "styleId": "S:73fdedc12d82d111a436d08afd2ea07e06357353,",
+          "exportKey": "color"
+        }
+      }
+    },
+    "warning": {
+      "description": "",
+      "type": "color",
+      "value": "#ffdb43ff",
+      "blendMode": "normal",
+      "extensions": {
+        "org.lukasoppermann.figmaDesignTokens": {
+          "styleId": "S:631ea5fc3cd97c674e0ef6bb405d334c5ec0a6d9,",
+          "exportKey": "color"
+        }
+      }
+    }
+  }
+}

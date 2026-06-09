@@ -1,0 +1,42 @@
+/* Color Design System - CSS Variables */
+/* Generated from color-tokens.tokens.json */
+
+:root {
+  --color-primary-color-0: #dd2d4a1a;
+  --color-primary-color-1: #f27b8cff;
+  --color-primary-color-2: #ec3952ff;
+  --color-primary-color-3: #ca132dff;
+  --color-primary-color-4: #880d1eff;
+  --color-primary-color-5: #500812ff;
+  --color-secondary-0: #dd2d4a1a;
+  --color-secondary-1: #e87386ff;
+  --color-secondary-2: #dd2d4aff;
+  --color-accent-0: #cbeef380;
+  --color-accent-1: #cbeef31a;
+  --color-accent-2: #cbeef3ff;
+  --color-accent-3: #92dbe6ff;
+  --color-accent-4: #59c9d9ff;
+  --color-accent-5: #2cadc0ff;
+  --color-background: #fafafaff;
+  --color-error-0: #d00416ff;
+  --color-error-1: #fb3748ff;
+  --color-success-0: #1fc16b1a;
+  --color-success-1: #84ebb4ff;
+  --color-success-2: #1fc16bff;
+  --color-warning: #ffdb43ff;
+}
+
+/* Color Roles - Semantic Colors for UI */
+/* These color roles are what your application should use */
+/* They reference the appropriate shade from the primitive colors */
+:root {
+  --color-role-background: var(--color-background);
+  --color-role-error: var(--color-error-1);
+  --color-role-error-light: var(--color-error-0);
+  --color-role-success: var(--color-success-2);
+  --color-role-success-light: var(--color-success-0);
+  --color-role-warning: var(--color-warning);
+  --color-role-primary: var(--color-primary-color-2);
+  --color-role-secondary: var(--color-secondary-2);
+  --color-role-accent: var(--color-accent-5);
+}
