@@ -71,16 +71,18 @@ export type FieldMapping = {
   email: string;
   firstName: string;
   lastName: string;
+  source: string;
 };
 
 export function mapCSVToSubscribers(
   rows: string[][],
   headers: string[],
   mapping: FieldMapping
-): { email: string; firstName?: string; lastName?: string }[] {
+): { email: string; firstName?: string; lastName?: string; source?: string }[] {
   const emailIdx = headers.indexOf(mapping.email);
   const firstNameIdx = mapping.firstName ? headers.indexOf(mapping.firstName) : -1;
   const lastNameIdx = mapping.lastName ? headers.indexOf(mapping.lastName) : -1;
+  const sourceIdx = mapping.source ? headers.indexOf(mapping.source) : -1;
 
   if (emailIdx < 0) return [];
 
@@ -88,5 +90,6 @@ export function mapCSVToSubscribers(
     email: row[emailIdx]?.trim(),
     firstName: firstNameIdx >= 0 ? row[firstNameIdx]?.trim() : undefined,
     lastName: lastNameIdx >= 0 ? row[lastNameIdx]?.trim() : undefined,
+    source: sourceIdx >= 0 ? row[sourceIdx]?.trim() : undefined,
   })).filter((s) => s.email);
 }

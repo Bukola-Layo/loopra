@@ -9,6 +9,7 @@ const updateSubscriberSchema = z.object({
   firstName: z.string().max(100).optional(),
   lastName: z.string().max(100).optional(),
   status: z.enum(["active", "unsubscribed", "bounced"]).optional(),
+  source: z.enum(["manual", "import", "website_form", "instagram", "facebook", "newsletter", "api", "other"]).optional(),
   tags: z.array(z.string()).optional(),
   customFields: z.record(z.unknown()).optional(),
 });
@@ -61,6 +62,7 @@ export async function PATCH(
         firstName: result.data.firstName,
         lastName: result.data.lastName,
         status: result.data.status,
+        source: result.data.source,
         customFields: result.data.customFields as Prisma.InputJsonValue | undefined,
         tags: result.data.tags
           ? {

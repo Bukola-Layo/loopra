@@ -20,6 +20,8 @@ import { ArrowLeft, Mail, Calendar, Edit, Trash2, X } from "lucide-react";
 import Link from "next/link";
 import { toast } from "@/hooks/use-toast";
 import { tagColorStyle } from "@/lib/tag-colors";
+import { subscriberStatusStyle } from "@/lib/subscriber-status";
+import { SUBSCRIBER_SOURCES, sourceLabel } from "@/lib/subscriber-source";
 
 type Subscriber = {
   id: string;
@@ -27,6 +29,7 @@ type Subscriber = {
   firstName: string | null;
   lastName: string | null;
   status: string;
+  source: string;
   customFields: Record<string, unknown> | null;
   tags: Array<{ tag: string }>;
   createdAt: string;
@@ -42,10 +45,12 @@ export default function SubscriberDetailPage() {
   const [editFirstName, setEditFirstName] = useState("");
   const [editLastName, setEditLastName] = useState("");
   const [editStatus, setEditStatus] = useState("active");
+  const [editSource, setEditSource] = useState("manual");
   const [editTagInput, setEditTagInput] = useState("");
   const [editTags, setEditTags] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
   useEffect(() => {
     if (!params?.id) return;
@@ -58,6 +63,7 @@ export default function SubscriberDetailPage() {
           setEditFirstName(sub.firstName ?? "");
           setEditLastName(sub.lastName ?? "");
           setEditStatus(sub.status);
+          setEditSource(sub.source ?? "manual");
           setEditTags(sub.tags?.map((t: { tag: string }) => t.tag) ?? []);
         }
       })
@@ -85,6 +91,7 @@ export default function SubscriberDetailPage() {
           firstName: editFirstName.trim() || undefined,
           lastName: editLastName.trim() || undefined,
           status: editStatus,
+          source: editSource,
           tags: editTags.length > 0 ? editTags : undefined,
         }),
       });
@@ -100,9 +107,13 @@ export default function SubscriberDetailPage() {
     }
   }
 
-  async function handleDelete() {
-    if (!confirm("Are you sure you want to delete this subscriber? This action cannot be undone.")) return;
+  function handleDeleteClick() {
+    setDeleteConfirmOpen(true);
+  }
+
+  async function confirmDelete() {
     setDeleting(true);
+    setDeleteConfirmOpen(false);
     try {
       const res = await fetch(`/api/audience/${params.id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Failed to delete");
@@ -153,10 +164,10 @@ export default function SubscriberDetailPage() {
         <Button variant="outline" size="sm" className="gap-2" onClick={() => setEditOpen(true)}>
           <Edit className="h-4 w-4" /> Edit
         </Button>
-        <Button variant="outline" size="sm" className="gap-2 text-destructive border-destructive/30 hover:bg-destructive/10" onClick={handleDelete} disabled={deleting}>
+        <Button variant="outline" size="sm" className="gap-2 text-destructive border-destructive/30 hover:bg-destructive/10" onClick={handleDeleteClick} disabled={deleting}>
           <Trash2 className="h-4 w-4" /> {deleting ? "Deleting..." : "Delete"}
         </Button>
-        <Badge variant={subscriber.status === "active" ? "default" : "secondary"}>
+        <Badge style={subscriberStatusStyle(subscriber.status)}>
           {subscriber.status}
         </Badge>
       </div>
@@ -174,6 +185,10 @@ export default function SubscriberDetailPage() {
             <div className="flex items-center gap-2 text-sm">
               <Calendar className="h-4 w-4 text-muted-foreground" />
               <span>Subscribed {new Date(subscriber.createdAt).toLocaleDateString()}</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm">
+              <span className="h-4 w-4 text-muted-foreground flex items-center justify-center text-xs">⌂</span>
+              <span>Source: {sourceLabel(subscriber.source)}</span>
             </div>
           </CardContent>
         </Card>
@@ -250,6 +265,19 @@ export default function SubscriberDetailPage() {
               </select>
             </div>
             <div className="space-y-2">
+              <Label htmlFor="edit-source">Source</Label>
+              <select
+                id="edit-source"
+                value={editSource}
+                onChange={(e) => setEditSource(e.target.value)}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                {SUBSCRIBER_SOURCES.map((s) => (
+                  <option key={s.value} value={s.value}>{s.label}</option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-2">
               <Label>Tags</Label>
               <div className="flex gap-2">
                 <Input
@@ -278,6 +306,23 @@ export default function SubscriberDetailPage() {
               <Button type="submit" disabled={saving}>{saving ? "Saving..." : "Save changes"}</Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Delete subscriber</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this subscriber? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setDeleteConfirmOpen(false)}>Cancel</Button>
+            <Button type="button" variant="destructive" onClick={confirmDelete} disabled={deleting}>
+              {deleting ? "Deleting..." : "Delete"}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

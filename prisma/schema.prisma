@@ -19,6 +19,17 @@ enum SubscriberStatus {
   bounced
 }
 
+enum SubscriberSource {
+  manual
+  import
+  website_form
+  instagram
+  facebook
+  newsletter
+  api
+  other
+}
+
 enum CampaignStatus {
   draft
   scheduled
@@ -184,6 +195,7 @@ model Subscriber {
   firstName     String?
   lastName      String?
   status        SubscriberStatus @default(active)
+  source        SubscriberSource @default(manual)
   customFields  Json?
   lastEngagedAt DateTime?
   createdAt     DateTime         @default(now())

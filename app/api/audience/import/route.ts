@@ -9,6 +9,7 @@ const importSubscriberSchema = z.object({
   email: z.string().email(),
   firstName: z.string().max(100).optional(),
   lastName: z.string().max(100).optional(),
+  source: z.enum(["manual", "import", "website_form", "instagram", "facebook", "newsletter", "api", "other"]).optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -30,7 +31,7 @@ export async function POST(req: NextRequest) {
         continue;
       }
 
-      const { email, firstName, lastName } = result.data;
+      const { email, firstName, lastName, source } = result.data;
 
       const existing = await db.subscriber.findUnique({
         where: { workspaceId_email: { workspaceId, email } },
@@ -48,6 +49,7 @@ export async function POST(req: NextRequest) {
             email,
             firstName,
             lastName,
+            source,
             customFields: {} as Prisma.InputJsonValue,
           },
         });

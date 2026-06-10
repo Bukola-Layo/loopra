@@ -20,6 +20,8 @@ import { Users, Search, Upload, Download, ChevronRight, Plus, X, FileText, Check
 import { toast } from "@/hooks/use-toast";
 import { parseCSV, previewCSV, mapCSVToSubscribers, type CSVPreview, type FieldMapping } from "@/lib/csv";
 import { tagColorStyle } from "@/lib/tag-colors";
+import { subscriberStatusStyle } from "@/lib/subscriber-status";
+import { SUBSCRIBER_SOURCES, sourceLabel } from "@/lib/subscriber-source";
 import {
   Sheet,
   SheetContent,
@@ -34,6 +36,7 @@ type Subscriber = {
   firstName: string | null;
   lastName: string | null;
   status: string;
+  source: string;
   tags: Array<{ tag: string }>;
   createdAt: string;
 };
@@ -62,6 +65,7 @@ export default function AudiencePage() {
   const [addLastName, setAddLastName] = useState("");
   const [addTagInput, setAddTagInput] = useState("");
   const [addTags, setAddTags] = useState<string[]>([]);
+  const [addSource, setAddSource] = useState("manual");
   const [saving, setSaving] = useState(false);
   const limit = 20;
 
@@ -70,7 +74,7 @@ export default function AudiencePage() {
   const [csvText, setCsvText] = useState("");
   const [csvPreview, setCsvPreview] = useState<CSVPreview | null>(null);
   const [csvFullRows, setCsvFullRows] = useState<string[][]>([]);
-  const [mapping, setMapping] = useState<FieldMapping>({ email: "", firstName: "", lastName: "" });
+  const [mapping, setMapping] = useState<FieldMapping>({ email: "", firstName: "", lastName: "", source: "" });
   const [importing, setImporting] = useState(false);
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -82,10 +86,12 @@ export default function AudiencePage() {
   const [editFirstName, setEditFirstName] = useState("");
   const [editLastName, setEditLastName] = useState("");
   const [editStatus, setEditStatus] = useState("active");
+  const [editSource, setEditSource] = useState("manual");
   const [editTagInput, setEditTagInput] = useState("");
   const [editTags, setEditTags] = useState<string[]>([]);
   const [detailSaving, setDetailSaving] = useState(false);
   const [detailError, setDetailError] = useState<string | null>(null);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
   const fetchSubscribers = useCallback(async () => {
     setLoading(true);
@@ -141,6 +147,7 @@ export default function AudiencePage() {
           email: addEmail.trim(),
           firstName: addFirstName.trim() || undefined,
           lastName: addLastName.trim() || undefined,
+          source: addSource,
           tags: addTags.length > 0 ? addTags : undefined,
         }),
       });
@@ -153,6 +160,7 @@ export default function AudiencePage() {
       setAddEmail("");
       setAddFirstName("");
       setAddLastName("");
+      setAddSource("manual");
       setAddTags([]);
       fetchSubscribers();
     } catch (err) {
@@ -180,12 +188,13 @@ export default function AudiencePage() {
       const rows = all.slice(1);
       setCsvFullRows(rows);
 
-      const autoMap: FieldMapping = { email: "", firstName: "", lastName: "" };
+      const autoMap: FieldMapping = { email: "", firstName: "", lastName: "", source: "" };
       for (const h of headers) {
         const lower = h.toLowerCase();
         if (!autoMap.email && (lower === "email" || lower === "e-mail" || lower === "mail")) autoMap.email = h;
         if (!autoMap.firstName && (lower === "first name" || lower === "firstname" || lower === "first" || lower === "given name")) autoMap.firstName = h;
         if (!autoMap.lastName && (lower === "last name" || lower === "lastname" || lower === "last" || lower === "family name" || lower === "surname")) autoMap.lastName = h;
+        if (!autoMap.source && (lower === "source" || lower === "lead source" || lower === "origin")) autoMap.source = h;
       }
       setMapping(autoMap);
       setImportStep("mapping");
@@ -199,7 +208,7 @@ export default function AudiencePage() {
     setCsvText("");
     setCsvPreview(null);
     setCsvFullRows([]);
-    setMapping({ email: "", firstName: "", lastName: "" });
+    setMapping({ email: "", firstName: "", lastName: "", source: "" });
     setImportResult(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
   }
@@ -223,6 +232,7 @@ export default function AudiencePage() {
         setEditFirstName(sub.firstName ?? "");
         setEditLastName(sub.lastName ?? "");
         setEditStatus(sub.status);
+        setEditSource(sub.source ?? "manual");
         setEditTags(sub.tags?.map((t: { tag: string }) => t.tag) ?? []);
       }
     } catch {
@@ -261,6 +271,7 @@ export default function AudiencePage() {
           firstName: editFirstName.trim() || undefined,
           lastName: editLastName.trim() || undefined,
           status: editStatus,
+          source: editSource,
           tags: editTags.length > 0 ? editTags : undefined,
         }),
       });
@@ -277,8 +288,13 @@ export default function AudiencePage() {
     }
   }
 
-  async function handleDetailDelete() {
-    if (!selectedId || !confirm("Delete this subscriber? This cannot be undone.")) return;
+  function handleDeleteClick() {
+    setDeleteConfirmOpen(true);
+  }
+
+  async function confirmDelete() {
+    if (!selectedId) return;
+    setDeleteConfirmOpen(false);
     try {
       const res = await fetch(`/api/audience/${selectedId}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Failed to delete");
@@ -297,7 +313,8 @@ export default function AudiencePage() {
     }
     setImporting(true);
     try {
-      const subscribers = mapCSVToSubscribers(csvFullRows, csvPreview!.headers, mapping);
+      const mapped = mapCSVToSubscribers(csvFullRows, csvPreview!.headers, mapping);
+      const subscribers = mapped.map((s) => ({ ...s, source: s.source || "import" }));
       if (subscribers.length === 0) {
         toast({ title: "No valid subscribers found in CSV", variant: "destructive" });
         setImporting(false);
@@ -432,8 +449,9 @@ export default function AudiencePage() {
                       {t.tag}
                     </span>
                   ))}
+                  <span className="text-xs text-muted-foreground hidden sm:inline">{sourceLabel(sub.source)}</span>
                   <Badge
-                    variant={sub.status === "active" ? "default" : "secondary"}
+                    style={subscriberStatusStyle(sub.status)}
                     className="text-xs"
                   >
                     {sub.status}
@@ -492,6 +510,19 @@ export default function AudiencePage() {
                 <Label htmlFor="add-last">Last name</Label>
                 <Input id="add-last" value={addLastName} onChange={(e) => setAddLastName(e.target.value)} placeholder="Doe" />
               </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="add-source">Source</Label>
+              <select
+                id="add-source"
+                value={addSource}
+                onChange={(e) => setAddSource(e.target.value)}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                {SUBSCRIBER_SOURCES.map((s) => (
+                  <option key={s.value} value={s.value}>{s.label}</option>
+                ))}
+              </select>
             </div>
             <div className="space-y-2">
               <Label>Tags</Label>
@@ -605,6 +636,19 @@ export default function AudiencePage() {
                       ))}
                     </select>
                   </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Source column</Label>
+                    <select
+                      value={mapping.source}
+                      onChange={(e) => setMapping((prev) => ({ ...prev, source: e.target.value }))}
+                      className="flex h-9 w-full rounded-md border border-input bg-background px-2 text-xs"
+                    >
+                      <option value="">-- None (import) --</option>
+                      {csvPreview.headers.map((h) => (
+                        <option key={h} value={h}>{h}</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
 
                 <div>
@@ -703,7 +747,7 @@ export default function AudiencePage() {
                   )}
                 </div>
                 <div className="flex items-center gap-2 mt-3">
-                  <Badge variant={subscriberDetail.status === "active" ? "default" : "secondary"}>
+                  <Badge style={subscriberStatusStyle(subscriberDetail.status)}>
                     {subscriberDetail.status}
                   </Badge>
                   <button
@@ -713,7 +757,7 @@ export default function AudiencePage() {
                     <Edit className="h-4 w-4" />
                   </button>
                   <button
-                    onClick={handleDetailDelete}
+                    onClick={handleDeleteClick}
                     className="p-1.5 rounded-md hover:bg-destructive/10 text-destructive transition-colors"
                   >
                     <Trash2 className="h-4 w-4" />
@@ -731,6 +775,10 @@ export default function AudiencePage() {
                   <div className="flex items-center gap-2 text-sm">
                     <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
                     <span>Subscribed {new Date(subscriberDetail.createdAt).toLocaleDateString()}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="h-4 w-4 text-muted-foreground shrink-0 flex items-center justify-center text-xs">⌂</span>
+                    <span>Source: {sourceLabel(subscriberDetail.source)}</span>
                   </div>
                 </div>
 
@@ -777,17 +825,29 @@ export default function AudiencePage() {
                       </div>
                     </div>
                     <div className="space-y-1">
-                      <Label className="text-xs">Status</Label>
-                      <select
-                        value={editStatus}
-                        onChange={(e) => setEditStatus(e.target.value)}
-                        className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                      >
-                        <option value="active">Active</option>
-                        <option value="unsubscribed">Unsubscribed</option>
-                        <option value="bounced">Bounced</option>
-                      </select>
-                    </div>
+                    <Label className="text-xs">Status</Label>
+                    <select
+                      value={editStatus}
+                      onChange={(e) => setEditStatus(e.target.value)}
+                      className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    >
+                      <option value="active">Active</option>
+                      <option value="unsubscribed">Unsubscribed</option>
+                      <option value="bounced">Bounced</option>
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">Source</Label>
+                    <select
+                      value={editSource}
+                      onChange={(e) => setEditSource(e.target.value)}
+                      className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    >
+                      {SUBSCRIBER_SOURCES.map((s) => (
+                        <option key={s.value} value={s.value}>{s.label}</option>
+                      ))}
+                    </select>
+                  </div>
                     <div className="space-y-1">
                       <Label className="text-xs">Tags</Label>
                       <div className="flex gap-1.5">
@@ -824,6 +884,21 @@ export default function AudiencePage() {
           ) : null}
         </SheetContent>
       </Sheet>
+
+      <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Delete subscriber</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this subscriber? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setDeleteConfirmOpen(false)}>Cancel</Button>
+            <Button type="button" variant="destructive" onClick={confirmDelete}>Delete</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

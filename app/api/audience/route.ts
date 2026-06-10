@@ -9,6 +9,7 @@ const createSubscriberSchema = z.object({
   email: z.string().email(),
   firstName: z.string().max(100).optional(),
   lastName: z.string().max(100).optional(),
+  source: z.enum(["manual", "import", "website_form", "instagram", "facebook", "newsletter", "api", "other"]).optional(),
   tags: z.array(z.string()).optional(),
   customFields: z.record(z.unknown()).optional(),
 });
@@ -57,7 +58,7 @@ export async function POST(req: NextRequest) {
       return apiError("Validation failed", 422, "VALIDATION_ERROR");
     }
 
-    const { email, firstName, lastName, tags, customFields } = result.data;
+    const { email, firstName, lastName, source, tags, customFields } = result.data;
 
     const existing = await db.subscriber.findUnique({
       where: { workspaceId_email: { workspaceId, email } },
@@ -73,6 +74,7 @@ export async function POST(req: NextRequest) {
         email,
         firstName,
         lastName,
+        source,
         customFields: (customFields ?? {}) as Prisma.InputJsonValue,
         tags: tags
           ? { create: tags.map((tag) => ({ tag })) }
