@@ -59,6 +59,7 @@ export async function POST(req: NextRequest) {
     }
 
     const { email, firstName, lastName, source, tags, customFields } = result.data;
+    const subscriberSource = source ?? "manual";
 
     const existing = await db.subscriber.findUnique({
       where: { workspaceId_email: { workspaceId, email } },
@@ -74,7 +75,7 @@ export async function POST(req: NextRequest) {
         email,
         firstName,
         lastName,
-        source,
+        source: subscriberSource,
         customFields: (customFields ?? {}) as Prisma.InputJsonValue,
         tags: tags
           ? { create: tags.map((tag) => ({ tag })) }

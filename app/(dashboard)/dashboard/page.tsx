@@ -27,8 +27,12 @@ export default function DashboardPage() {
 
   useEffect(() => {
     fetch("/api/analytics/dashboard")
-      .then((r) => r.json())
+      .then(async (r) => {
+        if (!r.ok) throw new Error("API error");
+        return r.json();
+      })
       .then((res) => setData(res))
+      .catch(() => setData(null))
       .finally(() => setLoading(false));
   }, []);
 
@@ -56,9 +60,9 @@ export default function DashboardPage() {
               <Skeleton className="h-8 w-16" />
             ) : (
               <>
-                <div className="text-2xl font-bold">{data?.metrics.subscribers ?? 0}</div>
+                <div className="text-2xl font-bold">{data?.metrics?.subscribers ?? 0}</div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {data?.metrics.activeSubscribers ?? 0} active
+                  {data?.metrics?.activeSubscribers ?? 0} active
                 </p>
               </>
             )}
@@ -76,9 +80,9 @@ export default function DashboardPage() {
               <Skeleton className="h-8 w-16" />
             ) : (
               <>
-                <div className="text-2xl font-bold">{data?.metrics.sentCampaigns ?? 0}</div>
+                <div className="text-2xl font-bold">{data?.metrics?.sentCampaigns ?? 0}</div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {data?.metrics.campaigns ?? 0} total created
+                  {data?.metrics?.campaigns ?? 0} total created
                 </p>
               </>
             )}
@@ -95,7 +99,7 @@ export default function DashboardPage() {
             {loading ? (
               <Skeleton className="h-8 w-16" />
             ) : (
-              <div className="text-2xl font-bold">{data?.metrics.forms ?? 0}</div>
+              <div className="text-2xl font-bold">{data?.metrics?.forms ?? 0}</div>
             )}
           </CardContent>
         </Card>
@@ -112,7 +116,7 @@ export default function DashboardPage() {
             ) : (
               <>
                 <div className="text-2xl font-bold">
-                  {data?.metrics.sentCampaigns && data.metrics.sentCampaigns > 0 ? "—" : "—"}
+                  {data?.metrics?.sentCampaigns ? "—" : "—"}
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
                   Send a campaign to see stats
@@ -159,9 +163,9 @@ export default function DashboardPage() {
                 <Skeleton className="h-4 w-full" />
                 <Skeleton className="h-4 w-3/4" />
               </div>
-            ) : data?.recentCampaigns.length || data?.recentSubscribers.length ? (
+            ) : (data?.recentCampaigns?.length ?? 0) > 0 || (data?.recentSubscribers?.length ?? 0) > 0 ? (
               <div className="space-y-4">
-                {data?.recentCampaigns.slice(0, 3).map((c) => (
+                {data?.recentCampaigns?.slice(0, 3).map((c) => (
                   <div key={c.id} className="flex items-center gap-3">
                     <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
                     <div className="min-w-0 flex-1">
@@ -170,7 +174,7 @@ export default function DashboardPage() {
                     </div>
                   </div>
                 ))}
-                {data?.recentSubscribers.slice(0, 3).map((s) => (
+                {data?.recentSubscribers?.slice(0, 3).map((s) => (
                   <div key={s.id} className="flex items-center gap-3">
                     <Users className="h-4 w-4 text-muted-foreground shrink-0" />
                     <div className="min-w-0 flex-1">

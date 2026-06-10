@@ -32,6 +32,7 @@ export async function POST(req: NextRequest) {
       }
 
       const { email, firstName, lastName, source } = result.data;
+      const subscriberSource = source ?? "import";
 
       const existing = await db.subscriber.findUnique({
         where: { workspaceId_email: { workspaceId, email } },
@@ -49,7 +50,7 @@ export async function POST(req: NextRequest) {
             email,
             firstName,
             lastName,
-            source,
+            source: subscriberSource,
             customFields: {} as Prisma.InputJsonValue,
           },
         });

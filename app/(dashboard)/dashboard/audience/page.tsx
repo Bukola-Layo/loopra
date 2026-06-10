@@ -153,7 +153,7 @@ export default function AudiencePage() {
       });
       if (!res.ok) {
         const err = await res.json();
-        throw new Error(err.message ?? "Failed to add subscriber");
+        throw new Error(err.error ?? "Failed to add subscriber");
       }
       toast({ title: "Subscriber added" });
       setDialogOpen(false);
@@ -306,6 +306,8 @@ export default function AudiencePage() {
     }
   }
 
+  const VALID_SOURCES = new Set(["manual", "import", "website_form", "instagram", "facebook", "newsletter", "api", "other"]);
+
   async function handleImport() {
     if (!mapping.email) {
       toast({ title: "Map the email column before importing", variant: "destructive" });
@@ -314,7 +316,10 @@ export default function AudiencePage() {
     setImporting(true);
     try {
       const mapped = mapCSVToSubscribers(csvFullRows, csvPreview!.headers, mapping);
-      const subscribers = mapped.map((s) => ({ ...s, source: s.source || "import" }));
+      const subscribers = mapped.map((s) => ({
+        ...s,
+        source: s.source && VALID_SOURCES.has(s.source) ? s.source : "import",
+      }));
       if (subscribers.length === 0) {
         toast({ title: "No valid subscribers found in CSV", variant: "destructive" });
         setImporting(false);
@@ -325,13 +330,13 @@ export default function AudiencePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ subscribers }),
       });
-      if (!res.ok) throw new Error("Import failed");
       const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Import failed");
       setImportResult(data.results);
       setImportStep("result");
       fetchSubscribers();
-    } catch {
-      toast({ title: "Import failed", variant: "destructive" });
+    } catch (err) {
+      toast({ title: err instanceof Error ? err.message : "Import failed", variant: "destructive" });
     } finally {
       setImporting(false);
     }
@@ -557,7 +562,7 @@ export default function AudiencePage() {
       </Dialog>
 
       <Dialog open={importOpen} onOpenChange={(open) => { if (!open) resetImport(); }}>
-        <DialogContent className="max-w-xl">
+        <DialogContent className="max-w-4xl">
           {importStep === "upload" && (
             <>
               <DialogHeader>
@@ -595,14 +600,14 @@ export default function AudiencePage() {
                   Map CSV columns to subscriber fields. Email is required.
                 </DialogDescription>
               </DialogHeader>
-              <div className="space-y-4">
-                <div className="grid grid-cols-3 gap-3">
+              <div className="space-y-6">
+                <div className="grid grid-cols-4 gap-4">
                   <div className="space-y-1.5">
                     <Label className="text-xs">Email column *</Label>
                     <select
                       value={mapping.email}
                       onChange={(e) => setMapping((prev) => ({ ...prev, email: e.target.value }))}
-                      className="flex h-9 w-full rounded-md border border-input bg-background px-2 text-xs"
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
                     >
                       <option value="">-- Select --</option>
                       {csvPreview.headers.map((h) => (
@@ -615,7 +620,7 @@ export default function AudiencePage() {
                     <select
                       value={mapping.firstName}
                       onChange={(e) => setMapping((prev) => ({ ...prev, firstName: e.target.value }))}
-                      className="flex h-9 w-full rounded-md border border-input bg-background px-2 text-xs"
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
                     >
                       <option value="">-- None --</option>
                       {csvPreview.headers.map((h) => (
@@ -628,7 +633,7 @@ export default function AudiencePage() {
                     <select
                       value={mapping.lastName}
                       onChange={(e) => setMapping((prev) => ({ ...prev, lastName: e.target.value }))}
-                      className="flex h-9 w-full rounded-md border border-input bg-background px-2 text-xs"
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
                     >
                       <option value="">-- None --</option>
                       {csvPreview.headers.map((h) => (
@@ -641,7 +646,7 @@ export default function AudiencePage() {
                     <select
                       value={mapping.source}
                       onChange={(e) => setMapping((prev) => ({ ...prev, source: e.target.value }))}
-                      className="flex h-9 w-full rounded-md border border-input bg-background px-2 text-xs"
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
                     >
                       <option value="">-- None (import) --</option>
                       {csvPreview.headers.map((h) => (
