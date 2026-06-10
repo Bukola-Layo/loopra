@@ -1,13 +1,25 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, Mail, Calendar } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { ArrowLeft, Mail, Calendar, Edit, Trash2, X } from "lucide-react";
 import Link from "next/link";
+import { toast } from "@/hooks/use-toast";
+import { tagColorStyle } from "@/lib/tag-colors";
 
 type Subscriber = {
   id: string;
@@ -23,16 +35,84 @@ type Subscriber = {
 
 export default function SubscriberDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const [subscriber, setSubscriber] = useState<Subscriber | null>(null);
   const [loading, setLoading] = useState(true);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editFirstName, setEditFirstName] = useState("");
+  const [editLastName, setEditLastName] = useState("");
+  const [editStatus, setEditStatus] = useState("active");
+  const [editTagInput, setEditTagInput] = useState("");
+  const [editTags, setEditTags] = useState<string[]>([]);
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (!params?.id) return;
     fetch(`/api/audience/${params.id}`)
       .then((r) => r.json())
-      .then((res) => setSubscriber(res.subscriber ?? null))
+      .then((res) => {
+        const sub = res.subscriber ?? null;
+        setSubscriber(sub);
+        if (sub) {
+          setEditFirstName(sub.firstName ?? "");
+          setEditLastName(sub.lastName ?? "");
+          setEditStatus(sub.status);
+          setEditTags(sub.tags?.map((t: { tag: string }) => t.tag) ?? []);
+        }
+      })
       .finally(() => setLoading(false));
   }, [params?.id]);
+
+  function addTag() {
+    const t = editTagInput.trim().toLowerCase();
+    if (t && !editTags.includes(t)) setEditTags((prev) => [...prev, t]);
+    setEditTagInput("");
+  }
+
+  function removeTag(tag: string) {
+    setEditTags((prev) => prev.filter((t) => t !== tag));
+  }
+
+  async function handleSave(e: React.FormEvent) {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/audience/${params.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          firstName: editFirstName.trim() || undefined,
+          lastName: editLastName.trim() || undefined,
+          status: editStatus,
+          tags: editTags.length > 0 ? editTags : undefined,
+        }),
+      });
+      if (!res.ok) throw new Error("Failed to update");
+      const data = await res.json();
+      setSubscriber(data.subscriber);
+      toast({ title: "Subscriber updated" });
+      setEditOpen(false);
+    } catch {
+      toast({ title: "Failed to update subscriber", variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleDelete() {
+    if (!confirm("Are you sure you want to delete this subscriber? This action cannot be undone.")) return;
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/audience/${params.id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Failed to delete");
+      toast({ title: "Subscriber deleted" });
+      router.push("/dashboard/audience");
+    } catch {
+      toast({ title: "Failed to delete subscriber", variant: "destructive" });
+      setDeleting(false);
+    }
+  }
 
   if (loading) {
     return (
@@ -70,9 +150,13 @@ export default function SubscriberDetailPage() {
             <p className="text-sm text-muted-foreground">{subscriber.email}</p>
           )}
         </div>
-        <Badge
-          variant={subscriber.status === "active" ? "default" : "secondary"}
-        >
+        <Button variant="outline" size="sm" className="gap-2" onClick={() => setEditOpen(true)}>
+          <Edit className="h-4 w-4" /> Edit
+        </Button>
+        <Button variant="outline" size="sm" className="gap-2 text-destructive border-destructive/30 hover:bg-destructive/10" onClick={handleDelete} disabled={deleting}>
+          <Trash2 className="h-4 w-4" /> {deleting ? "Deleting..." : "Delete"}
+        </Button>
+        <Badge variant={subscriber.status === "active" ? "default" : "secondary"}>
           {subscriber.status}
         </Badge>
       </div>
@@ -103,7 +187,7 @@ export default function SubscriberDetailPage() {
             ) : (
               <div className="flex flex-wrap gap-2">
                 {subscriber.tags.map((t) => (
-                  <Badge key={t.tag} variant="secondary">{t.tag}</Badge>
+                  <span key={t.tag} className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold" style={tagColorStyle(t.tag)}>{t.tag}</span>
                 ))}
               </div>
             )}
@@ -128,6 +212,74 @@ export default function SubscriberDetailPage() {
           </CardContent>
         </Card>
       )}
+
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit subscriber</DialogTitle>
+            <DialogDescription>
+              Update subscriber information.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleSave} className="space-y-4">
+            <div className="space-y-2">
+              <Label>Email</Label>
+              <Input value={subscriber.email} disabled className="bg-muted" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label htmlFor="edit-first">First name</Label>
+                <Input id="edit-first" value={editFirstName} onChange={(e) => setEditFirstName(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-last">Last name</Label>
+                <Input id="edit-last" value={editLastName} onChange={(e) => setEditLastName(e.target.value)} />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-status">Status</Label>
+              <select
+                id="edit-status"
+                value={editStatus}
+                onChange={(e) => setEditStatus(e.target.value)}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                <option value="active">Active</option>
+                <option value="unsubscribed">Unsubscribed</option>
+                <option value="bounced">Bounced</option>
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label>Tags</Label>
+              <div className="flex gap-2">
+                <Input
+                  value={editTagInput}
+                  onChange={(e) => setEditTagInput(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addTag(); } }}
+                  placeholder="Type tag and press Enter"
+                />
+                <Button type="button" variant="outline" size="sm" onClick={addTag}>Add</Button>
+              </div>
+              {editTags.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {editTags.map((tag) => (
+                    <span key={tag} className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold gap-1" style={tagColorStyle(tag)}>
+                      {tag}
+                      <button type="button" onClick={() => removeTag(tag)} className="hover:text-destructive">
+                        <X className="h-3 w-3" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setEditOpen(false)}>Cancel</Button>
+              <Button type="submit" disabled={saving}>{saving ? "Saving..." : "Save changes"}</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

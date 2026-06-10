@@ -6,8 +6,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, Eye, Code } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { EmptyState } from "@/components/shared/empty-state";
+import { ArrowLeft, Eye, Code, Inbox } from "lucide-react";
 import Link from "next/link";
+import { toast } from "@/hooks/use-toast";
 
 type FormField = {
   id: string;
@@ -26,10 +29,20 @@ type Form = {
   createdAt: string;
 };
 
+type Submission = {
+  id: string;
+  data: Record<string, unknown> | null;
+  ipAddress: string | null;
+  timestamp: string;
+  subscriber: { email: string; firstName: string | null; lastName: string | null } | null;
+};
+
 export default function FormDetailPage() {
   const params = useParams();
   const [form, setForm] = useState<Form | null>(null);
+  const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
+  const [submissionsLoading, setSubmissionsLoading] = useState(false);
 
   useEffect(() => {
     if (!params?.id) return;
@@ -38,6 +51,29 @@ export default function FormDetailPage() {
       .then((res) => setForm(res.form ?? null))
       .finally(() => setLoading(false));
   }, [params?.id]);
+
+  async function loadSubmissions() {
+    if (!params?.id) return;
+    setSubmissionsLoading(true);
+    try {
+      const res = await fetch(`/api/forms/${params.id}/submissions`);
+      const data = await res.json();
+      setSubmissions(data.submissions ?? []);
+    } finally {
+      setSubmissionsLoading(false);
+    }
+  }
+
+  function copyEmbedCode() {
+    if (!form) return;
+    const code = `<form action="${window.location.origin}/api/forms/${form.id}/submit" method="POST">
+  ${form.fields.sort((a, b) => a.position - b.position).map((f) => `  <input type="${f.type === "select" ? "text" : f.type}" name="${f.label}" placeholder="${f.label}"${f.required ? " required" : ""} />`).join("\n")}
+  <button type="submit">Subscribe</button>
+</form>`;
+    navigator.clipboard.writeText(code).then(() => {
+      toast({ title: "Embed code copied" });
+    });
+  }
 
   if (loading) {
     return (
@@ -71,41 +107,115 @@ export default function FormDetailPage() {
             <p className="text-sm text-muted-foreground">{form.description}</p>
           )}
         </div>
-        <Button variant="outline" className="gap-2">
-          <Eye className="h-4 w-4" /> Preview
-        </Button>
-        <Button variant="outline" className="gap-2">
-          <Code className="h-4 w-4" /> Embed
+        <Button variant="outline" className="gap-2" onClick={copyEmbedCode}>
+          <Code className="h-4 w-4" /> Copy embed
         </Button>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Fields ({form.fields.length})</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {form.fields.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No fields configured</p>
+      <Tabs defaultValue="fields" onValueChange={(v) => { if (v === "submissions") loadSubmissions(); }}>
+        <TabsList>
+          <TabsTrigger value="fields">Fields</TabsTrigger>
+          <TabsTrigger value="submissions">Submissions</TabsTrigger>
+          <TabsTrigger value="embed">Embed</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="fields" className="mt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Fields ({form.fields.length})</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {form.fields.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No fields configured</p>
+              ) : (
+                <div className="space-y-2">
+                  {form.fields
+                    .sort((a, b) => a.position - b.position)
+                    .map((field) => (
+                      <div key={field.id} className="flex items-center gap-3 p-3 rounded-lg border">
+                        <span className="text-sm text-muted-foreground w-6">{field.position}.</span>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium">{field.label}</p>
+                          <p className="text-xs text-muted-foreground">{field.type}</p>
+                        </div>
+                        {field.required && (
+                          <Badge variant="secondary" className="text-xs">Required</Badge>
+                        )}
+                      </div>
+                    ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="submissions" className="mt-4">
+          {submissionsLoading ? (
+            <div className="space-y-3">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <Skeleton key={i} className="h-16 w-full" />
+              ))}
+            </div>
+          ) : submissions.length === 0 ? (
+            <EmptyState
+              icon={<Inbox className="h-8 w-8" />}
+              title="No submissions yet"
+              description="Submissions will appear here when subscribers fill out this form."
+            />
           ) : (
-            <div className="space-y-2">
-              {form.fields
-                .sort((a, b) => a.position - b.position)
-                .map((field) => (
-                  <div key={field.id} className="flex items-center gap-3 p-3 rounded-lg border">
-                    <span className="text-sm text-muted-foreground w-6">{field.position}.</span>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">{field.label}</p>
-                      <p className="text-xs text-muted-foreground">{field.type}</p>
+            <div className="space-y-3">
+              {submissions.map((sub) => (
+                <Card key={sub.id}>
+                  <CardContent className="pt-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="text-sm font-medium">
+                        {sub.subscriber
+                          ? `${sub.subscriber.firstName ?? ""} ${sub.subscriber.lastName ?? ""}`.trim() || sub.subscriber.email
+                          : "Anonymous"}
+                      </div>
+                      <span className="text-xs text-muted-foreground">
+                        {new Date(sub.timestamp).toLocaleString()}
+                      </span>
                     </div>
-                    {field.required && (
-                      <Badge variant="secondary" className="text-xs">Required</Badge>
+                    {sub.data && Object.keys(sub.data).length > 0 && (
+                      <div className="space-y-1">
+                        {Object.entries(sub.data).map(([key, value]) => (
+                          <div key={key} className="flex text-xs">
+                            <span className="text-muted-foreground w-32">{key}</span>
+                            <span>{String(value)}</span>
+                          </div>
+                        ))}
+                      </div>
                     )}
-                  </div>
-                ))}
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           )}
-        </CardContent>
-      </Card>
+        </TabsContent>
+
+        <TabsContent value="embed" className="mt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Embed code</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground mb-4">
+                Copy and paste this HTML snippet into your website to embed the form.
+              </p>
+              <pre className="text-xs bg-muted p-4 rounded-lg overflow-x-auto">
+{`<form action="${typeof window !== "undefined" ? window.location.origin : ""}/api/forms/${form.id}/submit" method="POST">
+${form.fields.sort((a, b) => a.position - b.position).map((f) => `  <input type="${f.type === "select" ? "text" : f.type}" name="${f.label}" placeholder="${f.label}"${f.required ? " required" : ""} />`).join("\n")}
+  <button type="submit">Subscribe</button>
+</form>`}
+              </pre>
+              <Button variant="outline" size="sm" className="mt-4 gap-2" onClick={copyEmbedCode}>
+                <Code className="h-4 w-4" /> Copy code
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
 
       {form.settings && Object.keys(form.settings).length > 0 && (
         <Card>

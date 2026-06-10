@@ -19,16 +19,26 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const page = parseInt(searchParams.get("page") ?? "1");
     const limit = parseInt(searchParams.get("limit") ?? "20");
+    const search = searchParams.get("search") ?? "";
+
+    const where: Prisma.SubscriberWhereInput = { workspaceId };
+    if (search) {
+      where.OR = [
+        { email: { contains: search, mode: "insensitive" } },
+        { firstName: { contains: search, mode: "insensitive" } },
+        { lastName: { contains: search, mode: "insensitive" } },
+      ];
+    }
 
     const [subscribers, total] = await Promise.all([
       db.subscriber.findMany({
-        where: { workspaceId },
+        where,
         include: { tags: true },
         skip: (page - 1) * limit,
         take: limit,
         orderBy: { createdAt: "desc" },
       }),
-      db.subscriber.count({ where: { workspaceId } }),
+      db.subscriber.count({ where }),
     ]);
 
     return apiSuccess({ subscribers, total, page });
