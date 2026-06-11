@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { EmptyState } from "@/components/shared/empty-state";
-import { Mail, Plus, ChevronRight } from "lucide-react";
+import { Mail, Plus, ChevronRight, Search } from "lucide-react";
 import Link from "next/link";
 
 type Campaign = {
@@ -21,6 +21,7 @@ type Campaign = {
 export default function CampaignsPage() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     fetch("/api/campaigns")
@@ -28,6 +29,12 @@ export default function CampaignsPage() {
       .then((res) => setCampaigns(res.campaigns ?? []))
       .finally(() => setLoading(false));
   }, []);
+
+  const filteredCampaigns = campaigns.filter(
+    (c) =>
+      c.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.subject.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <div className="space-y-6">
@@ -46,6 +53,24 @@ export default function CampaignsPage() {
         </Link>
       </div>
 
+      {!loading && campaigns.length > 0 && (
+        <div className="flex items-center gap-4">
+          <div className="relative flex-1 max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Search campaigns..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="flex h-10 w-full rounded-md border border-input bg-background pl-9 pr-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            />
+          </div>
+          <p className="text-sm text-muted-foreground shrink-0">
+            {campaigns.length} {campaigns.length === 1 ? "campaign" : "campaigns"}
+          </p>
+        </div>
+      )}
+
       {loading ? (
         <div className="space-y-3">
           {Array.from({ length: 4 }).map((_, i) => (
@@ -62,9 +87,13 @@ export default function CampaignsPage() {
             onClick: () => {},
           }}
         />
+      ) : filteredCampaigns.length === 0 ? (
+        <div className="text-center py-16">
+          <p className="text-muted-foreground">No campaigns match your search.</p>
+        </div>
       ) : (
-        <div className="rounded-md border">
-          {campaigns.map((c) => (
+        <div className="rounded-md border bg-card">
+          {filteredCampaigns.map((c) => (
             <Link
               key={c.id}
               href={`/dashboard/campaigns/${c.id}`}

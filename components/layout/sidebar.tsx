@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   Users,
   Mail,
+  FileText,
   FormInput,
   GitFork,
   BarChart3,
@@ -32,6 +33,11 @@ const navItems = [
     label: "Campaigns",
     href: "/dashboard/campaigns",
     icon: Mail,
+  },
+  {
+    label: "Templates",
+    href: "/dashboard/templates",
+    icon: FileText,
   },
   {
     label: "Forms",

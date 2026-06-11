@@ -1,9 +1,9 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
-import type { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { getWorkspaceId } from "@/lib/auth";
 import { apiSuccess, apiError, handleApiError } from "@/types/api";
+import { sendCampaign } from "@/lib/email";
 
 const sendCampaignSchema = z.object({
   segmentIds: z.array(z.string()).optional(),
@@ -35,37 +35,20 @@ export async function POST(
       return apiError("Can only send draft campaigns", 400);
     }
 
-    const where: Prisma.SubscriberWhereInput = {
-      workspaceId,
-      status: "active",
-    };
-    if (result.data.segmentIds?.length) {
-      where.segmentMembers = {
-        some: { segmentId: { in: result.data.segmentIds } },
-      };
-    }
-    if (result.data.subscriberIds?.length) {
-      where.id = { in: result.data.subscriberIds };
-    }
-
-    const subscribers = await db.subscriber.findMany({
-      where,
-      select: { id: true },
-    });
-
     await db.campaign.update({
       where: { id: params.id },
-      data: {
-        status: "sending",
-        recipientCount: subscribers.length,
-        sentAt: new Date(),
-      },
+      data: { status: "sending" },
+    });
+
+    const { sent, failed } = await sendCampaign(params.id, workspaceId, {
+      segmentIds: result.data.segmentIds,
+      subscriberIds: result.data.subscriberIds,
     });
 
     return apiSuccess({
-      sent: subscribers.length,
-      queued: subscribers.length,
-      message: "Campaign queued for sending",
+      sent,
+      failed,
+      message: `Campaign sent to ${sent} recipient${sent !== 1 ? "s" : ""}${failed > 0 ? ` (${failed} failed)` : ""}`,
     });
   } catch (error) {
     return handleApiError(error);
