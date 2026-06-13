@@ -77,7 +77,7 @@ export function BlockEditor({ blocks, onChange }: BlockEditorProps) {
 
   function applyHtmlToBlocks() {
     const textBlock = createBlock("text");
-    textBlock.content.text = htmlDraft;
+    textBlock.content.text = decodeHtmlEntities(htmlDraft);
     onChange([textBlock]);
     setHtmlChanged(false);
     htmlDirty.current = false;
@@ -250,94 +250,86 @@ export function BlockEditor({ blocks, onChange }: BlockEditorProps) {
   );
 }
 
-export function EmailPreview({ blocks, viewport }: { blocks: EmailBlock[]; viewport: "desktop" | "mobile" }) {
+const VIEWPORT_WIDTHS = {
+  desktop: "100%",
+  tablet: "600px",
+  mobile: "375px",
+} as const;
+
+export type Viewport = keyof typeof VIEWPORT_WIDTHS;
+
+const EMAIL_DOC = [
+  '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>',
+  '<body style="margin:0;padding:0;background-color:#f4f4f5;">',
+  '<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;"><tr><td align="center" style="padding:24px 16px;">',
+  '<table role="presentation" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background-color:#ffffff;border-radius:8px;overflow:hidden;">',
+  '<tr><td style="padding:0;">{{BODY}}</td></tr>',
+  '</table></td></tr></table></body></html>',
+].join("\n");
+
+function decodeHtmlEntities(text: string): string {
+  return text
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#039;/g, "'")
+    .replace(/&#x27;/g, "'")
+    .replace(/&#x2F;/g, "/")
+    .replace(/&#(\d+);/g, (_, c) => String.fromCharCode(+c))
+    .replace(/&#x([0-9a-f]+);/gi, (_, c) => String.fromCharCode(parseInt(c, 16)))
+    .replace(/&amp;/g, "&");
+}
+
+function buildEmailHtml(blocks: EmailBlock[]): string {
+  const allTextBlocks = blocks.every((b) => b.type === "text");
+  if (allTextBlocks) {
+    const body = blocks.map((b) => b.content.text ?? "").join("\n");
+    const decoded = decodeHtmlEntities(body);
+    if (/<!DOCTYPE|<html|<head|<body/i.test(decoded)) {
+      return decoded;
+    }
+    return EMAIL_DOC.replace("{{BODY}}", decoded.replace(/\$/g, "$$$$"));
+  }
+  return blocksToHtml(blocks);
+}
+
+export function EmailPreview({ blocks, viewport }: { blocks: EmailBlock[]; viewport: Viewport }) {
+  const html = buildEmailHtml(blocks);
+
+  if (!blocks.length) {
+    return (
+      <div className="text-center py-12 text-sm text-muted-foreground border-2 border-dashed rounded-lg">
+        Add blocks to see a live preview.
+      </div>
+    );
+  }
+
+  const iframeWidth = VIEWPORT_WIDTHS[viewport];
 
   return (
-    <div>
-      <div className={`border rounded-lg overflow-hidden bg-gray-100 ${viewport === "mobile" ? "max-w-[375px]" : ""} mx-auto transition-all`}>
+    <div className="flex justify-center">
+      <div
+        className="border rounded-lg overflow-hidden bg-gray-100 transition-all"
+        style={{ width: iframeWidth, maxWidth: "100%" }}
+      >
         <div className="bg-white border-b px-4 py-2.5 flex items-center gap-3 text-xs text-muted-foreground">
           <div className="w-2 h-2 rounded-full bg-green-500" />
           <span className="font-medium text-foreground">Loopra</span>
           <span className="truncate">Newsletter</span>
           <span className="ml-auto text-[10px]">to me</span>
         </div>
-        <div className="bg-[#f4f4f5] p-6" style={{ minHeight: viewport === "mobile" ? "600px" : "500px" }}>
-          <div className="max-w-[600px] mx-auto bg-white rounded-lg overflow-hidden divide-y">
-            {blocks.map((block) => (
-              <PreviewBlock key={block.id} block={block} />
-            ))}
-            {blocks.length === 0 && (
-              <div className="p-8 text-center text-sm text-muted-foreground">
-                Add blocks to see a preview
-              </div>
-            )}
-          </div>
+        <div className="bg-[#f4f4f5]" style={{ minHeight: viewport === "mobile" ? "600px" : "500px" }}>
+          <iframe
+            srcDoc={html}
+            title="Email preview"
+            sandbox="allow-same-origin"
+            className="w-full"
+            style={{ border: "none", minHeight: viewport === "mobile" ? "600px" : "500px" }}
+          />
         </div>
       </div>
     </div>
   );
-}
-
-function PreviewBlock({ block }: { block: EmailBlock }) {
-  const c = block.content;
-  switch (block.type) {
-    case "header":
-      return (
-        <div style={{ textAlign: (c.alignment ?? "center") as "center" | "left" | "right", padding: "24px 32px 16px" }}>
-          <span style={{ fontSize: `${c.fontSize ?? 24}px`, color: c.color ?? "#111827", fontWeight: 700 }}>
-            {c.text ?? "Your Logo"}
-          </span>
-        </div>
-      );
-    case "text":
-      return (
-        <div style={{ padding: "8px 32px", fontSize: `${c.fontSize ?? 16}px`, color: c.color ?? "#374151", lineHeight: 1.6, whiteSpace: "pre-wrap" }}>
-          {c.text ?? ""}
-        </div>
-      );
-    case "image":
-      return (
-        <div style={{ padding: "8px 32px", textAlign: "center" }}>
-          <img src={c.src ?? ""} alt={c.alt ?? ""} style={{ maxWidth: "100%", height: "auto", display: "block", margin: "0 auto" }} />
-        </div>
-      );
-    case "button":
-      return (
-        <div style={{ padding: "16px 32px", textAlign: (c.alignment ?? "center") as "center" | "left" | "right" }}>
-          <a
-            href={c.url ?? "#"}
-            style={{
-              display: "inline-block",
-              borderRadius: "6px",
-              backgroundColor: c.bgColor ?? "#6366f1",
-              padding: "12px 24px",
-              color: c.color ?? "#ffffff",
-              fontSize: "14px",
-              fontWeight: 600,
-              textDecoration: "none",
-            }}
-          >
-            {c.text ?? "Click here"}
-          </a>
-        </div>
-      );
-    case "divider":
-      return (
-        <div style={{ padding: "16px 32px" }}>
-          <hr style={{ border: "none", borderTop: `1px solid ${c.color ?? "#e5e7eb"}`, margin: 0 }} />
-        </div>
-      );
-    case "spacer":
-      return <div style={{ height: `${c.height ?? 24}px` }} />;
-    case "footer":
-      return (
-        <div style={{ padding: "24px 32px", textAlign: "center", fontSize: `${c.fontSize ?? 12}px`, color: c.color ?? "#9ca3af" }}>
-          {c.text ?? ""}
-        </div>
-      );
-    default:
-      return null;
-  }
 }
 
 type SortableBlockProps = {

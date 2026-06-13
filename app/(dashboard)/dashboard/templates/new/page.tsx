@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
 import { ArrowLeft, Sparkles, Eye } from "lucide-react";
 import Link from "next/link";
-import { BlockEditor, EmailPreview } from "@/components/templates/block-editor";
+import { BlockEditor, EmailPreview, type Viewport } from "@/components/templates/block-editor";
 import {
   type EmailBlock,
   serializeBlocks,
@@ -22,7 +22,7 @@ export default function NewTemplatePage() {
   const [category, setCategory] = useState("");
   const [blocks, setBlocks] = useState<EmailBlock[]>([]);
   const [saving, setSaving] = useState(false);
-  const [viewport, setViewport] = useState<"desktop" | "mobile">("desktop");
+  const [viewport, setViewport] = useState<Viewport>("desktop");
 
   function loadBuiltIn(template: (typeof BUILT_IN_TEMPLATES)[number]) {
     setName(template.name);
@@ -155,24 +155,18 @@ export default function NewTemplatePage() {
                 <Eye className="h-4 w-4" /> Preview
               </CardTitle>
               <div className="flex gap-1 bg-muted rounded-lg p-0.5">
-                <button
-                  type="button"
-                  onClick={() => setViewport("desktop")}
-                  className={`px-3 py-1.5 text-xs rounded-md transition-colors ${
-                    viewport === "desktop" ? "bg-background shadow-sm font-medium" : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  Desktop
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setViewport("mobile")}
-                  className={`px-3 py-1.5 text-xs rounded-md transition-colors ${
-                    viewport === "mobile" ? "bg-background shadow-sm font-medium" : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  Mobile
-                </button>
+                {(["desktop", "tablet", "mobile"] as const).map((v) => (
+                  <button
+                    key={v}
+                    type="button"
+                    onClick={() => setViewport(v)}
+                    className={`px-3 py-1.5 text-xs rounded-md transition-colors capitalize ${
+                      viewport === v ? "bg-background shadow-sm font-medium" : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {v}
+                  </button>
+                ))}
               </div>
             </CardHeader>
             <CardContent>

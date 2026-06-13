@@ -3028,7 +3028,7 @@ statsd.increment("campaign.sent", { plan: "pro" });
 - Actions (send email, delay, apply tag, conditions)
 - Execution engine (background job processor)
 - Execution monitoring / logs
-- Retry logic and error handling
+- Retry logic and error handling 
 
 **Dependencies:** Phase 3 (campaigns), Phase 2 (tags, forms)
 

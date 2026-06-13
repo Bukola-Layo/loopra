@@ -132,7 +132,7 @@ export default function DashboardPage() {
           <CardHeader>
             <CardTitle>Quick Actions</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-4">
             <Link href="/dashboard/campaigns">
               <Button variant="outline" className="w-full justify-start gap-2">
                 <Mail className="h-4 w-4" />
