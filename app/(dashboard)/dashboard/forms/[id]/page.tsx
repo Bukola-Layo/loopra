@@ -1,14 +1,31 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EmptyState } from "@/components/shared/empty-state";
-import { ArrowLeft, Eye, Code, Inbox } from "lucide-react";
+import { StatusBadge } from "@/components/shared/status-badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { ArrowLeft, Code, Inbox, MoreHorizontal, Power, PowerOff, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "@/hooks/use-toast";
 
@@ -24,6 +41,7 @@ type Form = {
   id: string;
   name: string;
   description: string | null;
+  status: "active" | "disabled";
   settings: Record<string, unknown> | null;
   fields: FormField[];
   createdAt: string;
@@ -39,10 +57,14 @@ type Submission = {
 
 export default function FormDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const [form, setForm] = useState<Form | null>(null);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
   const [submissionsLoading, setSubmissionsLoading] = useState(false);
+  const [updating, setUpdating] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   useEffect(() => {
     if (!params?.id) return;
@@ -51,6 +73,41 @@ export default function FormDetailPage() {
       .then((res) => setForm(res.form ?? null))
       .finally(() => setLoading(false));
   }, [params?.id]);
+
+  async function toggleStatus() {
+    if (!form || updating) return;
+    setUpdating(true);
+    const newStatus = form.status === "active" ? "disabled" : "active";
+    try {
+      const res = await fetch(`/api/forms/${form.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      setForm(data.form);
+      toast({ title: `Form ${newStatus === "active" ? "enabled" : "disabled"}` });
+    } catch {
+      toast({ title: "Failed to update form status", variant: "destructive" });
+    } finally {
+      setUpdating(false);
+    }
+  }
+
+  async function deleteForm() {
+    if (!form || deleting) return;
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/forms/${form.id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error();
+      toast({ title: "Form deleted" });
+      router.push("/dashboard/forms");
+    } catch {
+      toast({ title: "Failed to delete form", variant: "destructive" });
+      setDeleting(false);
+    }
+  }
 
   async function loadSubmissions() {
     if (!params?.id) return;
@@ -102,7 +159,10 @@ export default function FormDetailPage() {
           </Button>
         </Link>
         <div className="flex-1">
-          <h1 className="text-2xl font-bold">{form.name}</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold">{form.name}</h1>
+            <StatusBadge status={form.status} />
+          </div>
           {form.description && (
             <p className="text-sm text-muted-foreground">{form.description}</p>
           )}
@@ -110,6 +170,45 @@ export default function FormDetailPage() {
         <Button variant="outline" className="gap-2" onClick={copyEmbedCode}>
           <Code className="h-4 w-4" /> Copy embed
         </Button>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon">
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={toggleStatus} disabled={updating}>
+              {form.status === "active" ? (
+                <><PowerOff className="h-4 w-4 mr-2" /> Disable</>
+              ) : (
+                <><Power className="h-4 w-4 mr-2" /> Enable</>
+              )}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+              <DialogTrigger asChild>
+                <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive">
+                  <Trash2 className="h-4 w-4 mr-2" /> Delete
+                </DropdownMenuItem>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Delete form</DialogTitle>
+                  <DialogDescription>
+                    Are you sure you want to delete "{form.name}"? This action cannot be undone. All fields and submissions will be permanently removed.
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setConfirmOpen(false)}>Cancel</Button>
+                  <Button variant="destructive" onClick={deleteForm} disabled={deleting}>
+                    {deleting ? "Deleting..." : "Delete"}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       <Tabs defaultValue="fields" onValueChange={(v) => { if (v === "submissions") loadSubmissions(); }}>

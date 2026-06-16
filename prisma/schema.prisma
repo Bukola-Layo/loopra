@@ -42,10 +42,14 @@ enum ContentType {
   markdown
 }
 
-enum LoopStatus {
-  draft
+enum FormStatus {
   active
-  paused
+  disabled
+}
+
+enum LoopStatus {
+  active
+  disabled
 }
 
 enum LoopTriggerType {
@@ -253,19 +257,20 @@ model SegmentMember {
 }
 
 model Form {
-  id          String   @id @default(uuid()) @db.Uuid
-  workspaceId String   @db.Uuid
+  id          String     @id @default(uuid()) @db.Uuid
+  workspaceId String     @db.Uuid
   name        String
   description String?
+  status      FormStatus @default(active)
   settings    Json?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 
   workspace   Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   fields      FormField[]
   submissions FormSubmission[]
 
-  @@index([workspaceId])
+  @@index([workspaceId, status])
   @@map("forms")
 }
 
@@ -359,7 +364,7 @@ model Loop {
   workspaceId String     @db.Uuid
   name        String
   description String?
-  status      LoopStatus @default(draft)
+  status      LoopStatus @default(disabled)
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 

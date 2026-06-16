@@ -6,12 +6,14 @@ type StatusBadgeProps = {
 
 const statusMap: Record<string, { label: string; variant: "success" | "warning" | "accent" | "default" | "secondary" | "destructive" | "outline" }> = {
   active: { label: "Active", variant: "success" },
+  disabled: { label: "Disabled", variant: "secondary" },
   inactive: { label: "Inactive", variant: "secondary" },
-  draft: { label: "Draft", variant: "outline" },
+  paused: { label: "Paused", variant: "warning" },
+
   scheduled: { label: "Scheduled", variant: "warning" },
   sent: { label: "Sent", variant: "success" },
   sending: { label: "Sending", variant: "accent" },
-  paused: { label: "Paused", variant: "warning" },
+
   published: { label: "Published", variant: "success" },
   pending: { label: "Pending", variant: "warning" },
   completed: { label: "Completed", variant: "success" },

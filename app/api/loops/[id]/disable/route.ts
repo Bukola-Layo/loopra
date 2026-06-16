@@ -19,7 +19,7 @@ export async function POST(
 
     const loop = await db.loop.update({
       where: { id: params.id },
-      data: { status: "paused" },
+      data: { status: "disabled" },
       include: {
         trigger: true,
         actions: { orderBy: { sequence: "asc" } },

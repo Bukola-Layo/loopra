@@ -10,6 +10,7 @@ const fieldSchema = z.object({
   type: z.enum(["text", "email", "select", "checkbox", "textarea"]),
   required: z.boolean().default(false),
   position: z.number(),
+  options: z.array(z.string()).optional(),
 });
 
 const createFormSchema = z.object({

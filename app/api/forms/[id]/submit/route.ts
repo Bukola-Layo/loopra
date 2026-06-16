@@ -15,6 +15,10 @@ export async function POST(
       return Response.json({ error: "Form not found" }, { status: 404 });
     }
 
+    if (form.status === "disabled") {
+      return Response.json({ error: "This form is no longer accepting submissions" }, { status: 403 });
+    }
+
     const formData = await req.formData();
     const data: Record<string, string> = {};
     let email = "";

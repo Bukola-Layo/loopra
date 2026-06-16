@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { EmptyState } from "@/components/shared/empty-state";
-import { GitFork, Plus, Play, Pause, ChevronRight } from "lucide-react";
+import { GitFork, Plus } from "lucide-react";
 import Link from "next/link";
 
 type Loop = {
@@ -69,7 +69,7 @@ export default function LoopsPage() {
             <Link
               key={loop.id}
               href={`/dashboard/loops/${loop.id}`}
-              className="rounded-lg border p-5 hover:border-primary/50 hover:shadow-sm transition-all"
+              className="rounded-lg border bg-card p-5 hover:border-primary/50 hover:shadow-sm transition-all"
             >
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-2">

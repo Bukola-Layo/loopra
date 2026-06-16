@@ -9,6 +9,7 @@ const updateFormSchema = z.object({
   name: z.string().min(1).max(200).optional(),
   description: z.string().optional(),
   settings: z.record(z.unknown()).optional(),
+  status: z.enum(["active", "disabled"]).optional(),
 });
 
 export async function GET(
@@ -56,9 +57,10 @@ export async function PATCH(
     const form = await db.form.update({
       where: { id: params.id },
       data: {
-        name: result.data.name,
-        description: result.data.description,
-        settings: result.data.settings as Prisma.InputJsonValue | undefined,
+        ...(result.data.name !== undefined && { name: result.data.name }),
+        ...(result.data.description !== undefined && { description: result.data.description }),
+        ...(result.data.settings !== undefined && { settings: result.data.settings as Prisma.InputJsonValue }),
+        ...(result.data.status !== undefined && { status: result.data.status }),
       },
       include: { fields: { orderBy: { position: "asc" } } },
     });

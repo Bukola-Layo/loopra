@@ -8,7 +8,7 @@ import { apiSuccess, apiError, handleApiError } from "@/types/api";
 const updateLoopSchema = z.object({
   name: z.string().min(1).max(200).optional(),
   description: z.string().optional(),
-  status: z.enum(["draft", "active", "paused"]).optional(),
+  status: z.enum(["active", "disabled"]).optional(),
   trigger: z.object({
     type: z.enum(["form_submission", "tag_added", "subscriber_created", "campaign_opened", "campaign_clicked"]),
     config: z.record(z.unknown()).optional(),
