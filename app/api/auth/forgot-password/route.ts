@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
-import { resend } from "@/lib/resend";
+import { transporter, fromEmail } from "@/lib/mail";
 import crypto from "crypto";
 
 const forgotPasswordSchema = z.object({
@@ -53,8 +53,8 @@ export async function POST(req: NextRequest) {
     // Send reset email
     const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL}/reset-password?token=${token}&email=${encodeURIComponent(email)}`;
 
-    await resend.emails.send({
-      from: "noreply@loopra.com",
+    await transporter.sendMail({
+      from: fromEmail,
       to: email,
       subject: "Reset your Loopra password",
       html: `

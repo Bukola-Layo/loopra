@@ -28,7 +28,7 @@ loopra/
 │   └── [feature]/               # Feature-scoped components
 ├── lib/
 │   ├── db.ts                    # Prisma client singleton
-│   ├── resend.ts                # Resend client singleton
+│   ├── mail.ts                  # Nodemailer transporter
 │   ├── flutterwave.ts           # Flutterwave helpers
 │   ├── auth.ts                  # Session / auth helpers
 │   └── utils.ts                 # General utilities
@@ -82,7 +82,7 @@ All secrets must be in `.env.local` (local) or Vercel environment variables (pro
 | Variable | Purpose |
 |---|---|
 | `DATABASE_URL` | PostgreSQL connection string |
-| `RESEND_API_KEY` | Email delivery |
+| `SMTP_HOST` / `SMTP_USER` / `SMTP_PASS` | Email delivery (Nodemailer) |
 | `FLUTTERWAVE_SECRET_KEY` | Payment processing |
 | `FLUTTERWAVE_PUBLIC_KEY` | Client-side payment init |
 | `FLUTTERWAVE_WEBHOOK_SECRET` | Webhook signature verification |

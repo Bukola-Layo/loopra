@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { EmptyState } from "@/components/shared/empty-state";
@@ -69,25 +68,26 @@ export default function LoopsPage() {
             <Link
               key={loop.id}
               href={`/dashboard/loops/${loop.id}`}
-              className="rounded-lg border bg-card p-5 hover:border-primary/50 hover:shadow-sm transition-all"
+              className="rounded-lg border bg-card hover:border-primary/50 hover:shadow-sm transition-all overflow-hidden"
             >
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <GitFork className="h-5 w-5 text-muted-foreground" />
-                  <h3 className="font-medium">{loop.name}</h3>
+              <img
+                className="w-full h-32 object-cover border-b"
+                src="/images/illustrations/loop.png.png"
+                alt=""
+              />
+              <div className="p-5">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <GitFork className="h-5 w-5 text-muted-foreground" />
+                    <h3 className="font-medium">{loop.name}</h3>
+                  </div>
+                  <StatusBadge status={loop.status} />
                 </div>
-                <StatusBadge status={loop.status} />
-              </div>
-              {loop.description && (
-                <p className="text-xs text-muted-foreground mb-3 line-clamp-2">
-                  {loop.description}
-                </p>
-              )}
-              <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                <Badge variant="outline" className="text-xs">
-                  {loop.trigger?.type?.replace(/_/g, " ") ?? "No trigger"}
-                </Badge>
-                <span>{loop.actions?.length ?? 0} actions</span>
+                {loop.description && (
+                  <p className="text-xs text-muted-foreground line-clamp-2">
+                    {loop.description}
+                  </p>
+                )}
               </div>
             </Link>
           ))}

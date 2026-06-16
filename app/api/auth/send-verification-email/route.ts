@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
-import { resend } from "@/lib/resend";
+import { transporter, fromEmail } from "@/lib/mail";
 import crypto from "crypto";
 
 const sendVerificationSchema = z.object({
@@ -61,8 +61,8 @@ export async function POST(req: NextRequest) {
     // Send email
     const verifyUrl = `${process.env.NEXT_PUBLIC_APP_URL}/auth/verify-email?token=${token}&email=${encodeURIComponent(email)}`;
 
-    await resend.emails.send({
-      from: "noreply@loopra.com",
+    await transporter.sendMail({
+      from: fromEmail,
       to: email,
       subject: "Verify your Loopra email",
       html: `

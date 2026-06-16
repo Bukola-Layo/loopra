@@ -56,7 +56,7 @@ const campaigns = await db.campaign.findMany({ where: { workspaceId } });
 | Secret | Scope |
 |---|---|
 | `DATABASE_URL` | Server only |
-| `RESEND_API_KEY` | Server only |
+| `SMTP_HOST` / `SMTP_USER` / `SMTP_PASS` | Server only |
 | `FLUTTERWAVE_SECRET_KEY` | Server only |
 | `NEXTAUTH_SECRET` | Server only |
 | `FLUTTERWAVE_PUBLIC_KEY` | Client-safe (prefixed `NEXT_PUBLIC_`) |

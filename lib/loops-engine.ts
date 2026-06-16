@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { resend } from "./resend";
+import { transporter, fromEmail } from "./mail";
 import type { Prisma } from "@prisma/client";
 
 type LoopWithRelations = Awaited<ReturnType<typeof getLoopWithRelations>>;
@@ -255,14 +255,16 @@ async function executeSendEmail(
 
   const html = buildEmailDocument(content, baseUrl, subscriber.id);
 
-  const { error } = await resend.emails.send({
-    from: process.env.RESEND_FROM_EMAIL ?? "Loopra <onboarding@resend.dev>",
-    to: subscriber.email,
-    subject,
-    html,
-  });
-
-  if (error) throw new Error(`Email send failed: ${error.message}`);
+  try {
+    await transporter.sendMail({
+      from: fromEmail,
+      to: subscriber.email,
+      subject,
+      html,
+    });
+  } catch (err) {
+    throw new Error(`Email send failed: ${err instanceof Error ? err.message : "unknown error"}`);
+  }
 
   return { sent: true, email: subscriber.email };
 }

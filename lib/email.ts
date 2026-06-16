@@ -1,4 +1,4 @@
-import { resend } from "./resend";
+import { transporter, fromEmail } from "./mail";
 import { db } from "./db";
 import { marked } from "marked";
 
@@ -98,15 +98,15 @@ export async function sendCampaign(
         baseUrl
       );
 
-      const { error } = await resend.emails.send({
-        from: "Loopra <onboarding@resend.dev>",
-        to: subscriber.email,
-        subject: campaign.subject,
-        html,
-      });
-
-      if (error) {
-        console.error(`Failed to send to ${subscriber.email}:`, error);
+      try {
+        await transporter.sendMail({
+          from: fromEmail,
+          to: subscriber.email,
+          subject: campaign.subject,
+          html,
+        });
+      } catch (err) {
+        console.error(`Failed to send to ${subscriber.email}:`, err);
         failed++;
         await db.campaignSend.create({
           data: {

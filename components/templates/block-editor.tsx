@@ -29,6 +29,7 @@ import {
   ChevronUp,
   ChevronDown,
   AlertTriangle,
+  Upload,
 } from "lucide-react";
 import {
   type EmailBlock,
@@ -405,17 +406,123 @@ type BlockFieldsProps = {
 
 function BlockFields({ block, onUpdate }: BlockFieldsProps) {
   const c = block.content;
+  const [dragOver, setDragOver] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   function set(key: string, value: string) {
     onUpdate(block.id, { ...block.content, [key]: value });
+  }
+
+  function handleFile(file: File) {
+    if (!file.type.startsWith("image/")) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      if (typeof e.target?.result === "string") {
+        set("src", e.target.result);
+      }
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function handleDrop(e: React.DragEvent) {
+    e.preventDefault();
+    setDragOver(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) handleFile(file);
+  }
+
+  function handleDragOver(e: React.DragEvent) {
+    e.preventDefault();
+    setDragOver(true);
+  }
+
+  function handleDragLeave(e: React.DragEvent) {
+    e.preventDefault();
+    setDragOver(false);
   }
 
   switch (block.type) {
     case "header":
       return (
         <div className="space-y-2">
+          <Label className="text-xs">Logo image</Label>
+          <div
+            onDrop={(e) => {
+              e.preventDefault();
+              setDragOver(false);
+              const file = e.dataTransfer.files?.[0];
+              if (file) {
+                if (!file.type.startsWith("image/")) return;
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                  if (typeof ev.target?.result === "string") set("logoSrc", ev.target.result);
+                };
+                reader.readAsDataURL(file);
+              }
+            }}
+            onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+            onDragLeave={(e) => { e.preventDefault(); setDragOver(false); }}
+            onClick={() => fileInputRef.current?.click()}
+            className={`border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-colors ${
+              dragOver ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
+            }`}
+          >
+            {c.logoSrc ? (
+              <div className="flex flex-col items-center gap-2">
+                <img src={c.logoSrc} alt="Logo preview" className="max-h-12 object-contain" />
+                <span className="text-xs text-muted-foreground">Click or drag to replace</span>
+              </div>
+            ) : (
+              <>
+                <Upload className="h-5 w-5 mx-auto mb-1 text-muted-foreground" />
+                <p className="text-xs text-muted-foreground">Upload logo image</p>
+              </>
+            )}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  if (!file.type.startsWith("image/")) return;
+                  const reader = new FileReader();
+                  reader.onload = (ev) => {
+                    if (typeof ev.target?.result === "string") set("logoSrc", ev.target.result);
+                  };
+                  reader.readAsDataURL(file);
+                }
+              }}
+            />
+          </div>
+          {c.logoSrc && (
+            <>
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs">Logo width</Label>
+                  <span className="text-xs text-muted-foreground">{c.logoWidth ?? "200"}px</span>
+                </div>
+                <input
+                  type="range"
+                  min="50"
+                  max="400"
+                  value={c.logoWidth ?? "200"}
+                  onChange={(e) => set("logoWidth", e.target.value)}
+                  className="w-full"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={() => set("logoSrc", "")}
+                className="text-xs text-destructive hover:underline"
+              >
+                Remove logo
+              </button>
+            </>
+          )}
           <div className="space-y-1">
-            <Label className="text-xs">Text</Label>
+            <Label className="text-xs">Fallback text</Label>
             <Input value={c.text ?? ""} onChange={(e) => set("text", e.target.value)} placeholder="Your Logo" />
           </div>
           <div className="grid grid-cols-3 gap-2">
@@ -469,8 +576,33 @@ function BlockFields({ block, onUpdate }: BlockFieldsProps) {
     case "image":
       return (
         <div className="space-y-2">
+          <Label className="text-xs">Upload image</Label>
+          <div
+            onDrop={handleDrop}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onClick={() => fileInputRef.current?.click()}
+            className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
+              dragOver ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
+            }`}
+          >
+            <Upload className="h-6 w-6 mx-auto mb-2 text-muted-foreground" />
+            <p className="text-xs text-muted-foreground">
+              {dragOver ? "Drop image here" : "Drag & drop or click to upload"}
+            </p>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) handleFile(file);
+              }}
+            />
+          </div>
           <div className="space-y-1">
-            <Label className="text-xs">Image URL</Label>
+            <Label className="text-xs">Or paste image URL</Label>
             <Input value={c.src ?? ""} onChange={(e) => set("src", e.target.value)} placeholder="https://example.com/image.jpg" />
           </div>
           <div className="space-y-1">

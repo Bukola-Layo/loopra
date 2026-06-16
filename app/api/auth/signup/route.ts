@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { hash } from "bcryptjs";
 import { z } from "zod";
 import { db } from "@/lib/db";
-import { resend } from "@/lib/resend";
+import { transporter, fromEmail } from "@/lib/mail";
 import crypto from "crypto";
 
 const signupSchema = z.object({
@@ -76,10 +76,10 @@ export async function POST(req: NextRequest) {
     // Send verification email
     const verifyUrl = `${process.env.NEXT_PUBLIC_APP_URL}/verify-email?token=${verificationToken}&email=${encodeURIComponent(email)}`;
 
-    if (process.env.RESEND_API_KEY && !process.env.RESEND_API_KEY.startsWith("re_xxxx")) {
+    if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
       try {
-        await resend.emails.send({
-          from: "noreply@loopra.com",
+        await transporter.sendMail({
+          from: fromEmail,
           to: email,
           subject: "Verify your Loopra email",
           html: `

@@ -17,7 +17,7 @@ export function createBlock(type: BlockType): EmailBlock {
   const id = crypto.randomUUID();
   switch (type) {
     case "header":
-      return { id, type, content: { text: "Your Logo", fontSize: "24", alignment: "center", color: "#111827" } };
+      return { id, type, content: { text: "Your Logo", fontSize: "24", alignment: "center", color: "#111827", logoSrc: "", logoWidth: "200" } };
     case "text":
       return { id, type, content: { text: "Enter your text here...", fontSize: "16", color: "#374151" } };
     case "image":
@@ -73,6 +73,11 @@ function renderBlock(block: EmailBlock): string {
   const c = block.content;
   switch (block.type) {
     case "header":
+      if (c.logoSrc) {
+        return `<tr><td style="padding:24px 32px 16px;text-align:${c.alignment ?? "center"};">
+          <img src="${escapeAttr(c.logoSrc)}" alt="${escapeAttr(c.text ?? "Logo")}" style="max-width:${c.logoWidth ?? "200"}px;height:auto;display:inline-block;" />
+        </td></tr>`;
+      }
       return `<tr><td style="padding:24px 32px 16px;text-align:${c.alignment ?? "center"};">
         <span style="font-size:${c.fontSize ?? "24"}px;color:${c.color ?? "#111827"};font-weight:700;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">${escapeHtml(c.text ?? "Your Logo")}</span>
       </td></tr>`;
