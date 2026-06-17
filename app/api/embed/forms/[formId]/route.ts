@@ -63,7 +63,7 @@ export async function POST(
             email,
             firstName: (data.firstName as string) ?? (data.first_name as string),
             lastName: (data.lastName as string) ?? (data.last_name as string),
-            source: "website_form",
+            source: "form",
             customFields: data as Prisma.InputJsonValue,
           },
         });

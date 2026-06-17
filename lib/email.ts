@@ -1,6 +1,7 @@
 import { transporter, fromEmail } from "./mail";
 import { db } from "./db";
 import { marked } from "marked";
+import { deserializeBlocks, blocksToRows } from "./email-builder";
 
 const TRACKING_PIXEL_BASE64 =
   "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
@@ -27,10 +28,17 @@ export async function renderEmailHtml(
   subscriberId: string,
   baseUrl: string
 ): Promise<string> {
-  const bodyContent =
+  const processed =
     contentType === "markdown"
       ? await marked(content)
       : content;
+
+  // If content is serialized blocks JSON, convert to row HTML
+  const bodyContent = (() => {
+    const blocks = deserializeBlocks(processed);
+    if (blocks) return blocksToRows(blocks);
+    return processed;
+  })();
 
   const withLinks = wrapLinks(bodyContent, campaignId, subscriberId, baseUrl);
 
@@ -81,6 +89,11 @@ export async function sendCampaign(
 
   if (!campaign) throw new Error("Campaign not found");
   if (campaign.status !== "draft") throw new Error("Can only send draft campaigns");
+
+  await db.campaign.update({
+    where: { id: campaign.id },
+    data: { status: "sending" },
+  });
 
   const baseUrl =
     process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";

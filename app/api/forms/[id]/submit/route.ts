@@ -46,6 +46,7 @@ export async function POST(
         data: {
           workspaceId: form.workspaceId,
           email,
+          source: "form",
           customFields: data,
         },
       });

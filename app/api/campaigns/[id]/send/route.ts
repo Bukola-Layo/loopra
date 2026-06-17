@@ -35,21 +35,24 @@ export async function POST(
       return apiError("Can only send draft campaigns", 400);
     }
 
-    await db.campaign.update({
-      where: { id: params.id },
-      data: { status: "sending" },
-    });
+    try {
+      const { sent, failed } = await sendCampaign(params.id, workspaceId, {
+        segmentIds: result.data.segmentIds,
+        subscriberIds: result.data.subscriberIds,
+      });
 
-    const { sent, failed } = await sendCampaign(params.id, workspaceId, {
-      segmentIds: result.data.segmentIds,
-      subscriberIds: result.data.subscriberIds,
-    });
-
-    return apiSuccess({
-      sent,
-      failed,
-      message: `Campaign sent to ${sent} recipient${sent !== 1 ? "s" : ""}${failed > 0 ? ` (${failed} failed)` : ""}`,
-    });
+      return apiSuccess({
+        sent,
+        failed,
+        message: `Campaign sent to ${sent} recipient${sent !== 1 ? "s" : ""}${failed > 0 ? ` (${failed} failed)` : ""}`,
+      });
+    } catch (error) {
+      await db.campaign.update({
+        where: { id: params.id },
+        data: { status: "draft" },
+      });
+      return handleApiError(error);
+    }
   } catch (error) {
     return handleApiError(error);
   }

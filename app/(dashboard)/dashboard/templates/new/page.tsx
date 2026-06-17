@@ -56,7 +56,7 @@ export default function NewTemplatePage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Failed to create");
       toast({ title: "Template created" });
-      router.push("/dashboard/templates");
+      router.push(`/dashboard/templates/${data.template.id}/edit`);
     } catch (err) {
       toast({
         title: err instanceof Error ? err.message : "Failed to create template",

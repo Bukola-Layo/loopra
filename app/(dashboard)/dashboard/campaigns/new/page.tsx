@@ -10,6 +10,7 @@ import { toast } from "@/hooks/use-toast";
 import { ArrowLeft, FileText } from "lucide-react";
 import Link from "next/link";
 import { anyToHtml } from "@/lib/email-builder";
+import { AiPanel } from "@/components/ai/ai-panel";
 
 type Template = {
   id: string;
@@ -155,11 +156,18 @@ export default function NewCampaignPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Email content</CardTitle>
-            <Link href="/dashboard/templates">
-              <Button type="button" variant="outline" size="sm" className="gap-1">
-                <FileText className="h-3 w-3" /> Browse templates
-              </Button>
-            </Link>
+            <div className="flex items-center gap-2">
+              <AiPanel
+                onInsertContent={(c) => setContent(c)}
+                onInsertSubject={(s) => setSubject(s)}
+                currentContent={content}
+              />
+              <Link href="/dashboard/templates">
+                <Button type="button" variant="outline" size="sm" className="gap-1">
+                  <FileText className="h-3 w-3" /> Browse templates
+                </Button>
+              </Link>
+            </div>
           </CardHeader>
           <CardContent className="space-y-4">
             {templates.length > 0 && (

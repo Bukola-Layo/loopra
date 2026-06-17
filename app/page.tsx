@@ -10,7 +10,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-
 const features = [
   {
     icon: Mail,
@@ -123,20 +122,29 @@ export default function LandingPage() {
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {features.map((feature) => (
-              <div key={feature.title} className="space-y-4">
-                <div
-                  className="flex h-12 w-12 items-center justify-center rounded-lg"
-                  style={{ backgroundColor: "var(--color-primary-color-0)" }}
-                >
-                  <feature.icon
-                    className="h-6 w-6"
-                    style={{ color: "var(--color-role-primary)" }}
-                  />
+              <div
+                key={feature.title}
+                className="relative rounded-xl p-px"
+                style={{
+                  background:
+                    "linear-gradient(135deg, rgba(236,57,82,0.15), rgba(236,57,82,0.05), rgba(44,173,192,0.15))",
+                }}
+              >
+                <div className="space-y-4 rounded-xl bg-background p-6">
+                  <div
+                    className="flex h-12 w-12 items-center justify-center rounded-lg"
+                    style={{ backgroundColor: "var(--color-primary-color-0)" }}
+                  >
+                    <feature.icon
+                      className="h-6 w-6"
+                      style={{ color: "var(--color-role-primary)" }}
+                    />
+                  </div>
+                  <h3 className="font-semibold text-lg">{feature.title}</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {feature.description}
+                  </p>
                 </div>
-                <h3 className="font-semibold text-lg">{feature.title}</h3>
-                <p className="text-sm text-muted-foreground">
-                  {feature.description}
-                </p>
               </div>
             ))}
           </div>

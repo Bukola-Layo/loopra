@@ -25,7 +25,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { ArrowLeft, Code, Inbox, MoreHorizontal, Power, PowerOff, Trash2 } from "lucide-react";
+import { ArrowLeft, Code, Globe, Inbox, MoreHorizontal, Power, PowerOff, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "@/hooks/use-toast";
 
@@ -167,6 +167,13 @@ export default function FormDetailPage() {
             <p className="text-sm text-muted-foreground">{form.description}</p>
           )}
         </div>
+        <Button variant="outline" className="gap-2" onClick={() => {
+          navigator.clipboard.writeText(`${window.location.origin}/f/${form.id}`).then(() => {
+            toast({ title: "Form link copied" });
+          });
+        }}>
+          <Globe className="h-4 w-4" /> Copy link
+        </Button>
         <Button variant="outline" className="gap-2" onClick={copyEmbedCode}>
           <Code className="h-4 w-4" /> Copy embed
         </Button>

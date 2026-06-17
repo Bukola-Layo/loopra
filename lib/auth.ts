@@ -57,11 +57,18 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger }) {
       if (user) {
         token.id = user.id;
         token.workspaceId = (user as unknown as Record<string, unknown>).workspaceId as string;
         token.role = (user as unknown as Record<string, unknown>).role as string;
+      }
+      if (trigger === "update" && token.id) {
+        const dbUser = await db.user.findUnique({
+          where: { id: token.id as string },
+          select: { image: true },
+        });
+        if (dbUser) token.picture = dbUser.image;
       }
       return token;
     },

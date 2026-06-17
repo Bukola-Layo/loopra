@@ -16,7 +16,8 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { ArrowLeft, Send, Clock, Copy, BarChart3, Edit3, Save, X, Eye, MousePointerClick, AlertTriangle, UserX, Mail } from "lucide-react";
+import { ArrowLeft, Send, Clock, Copy, BarChart3, Edit3, Save, X, Eye, MousePointerClick, AlertTriangle, UserX, Mail, Sparkles } from "lucide-react";
+import { AiPanel } from "@/components/ai/ai-panel";
 import { toast } from "@/hooks/use-toast";
 import Link from "next/link";
 
@@ -48,6 +49,7 @@ export default function CampaignDetailPage() {
   const [editSubject, setEditSubject] = useState("");
   const [editContent, setEditContent] = useState("");
   const [saving, setSaving] = useState(false);
+  const [savingTemplate, setSavingTemplate] = useState(false);
 
   const [sendDialogOpen, setSendDialogOpen] = useState(false);
   const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false);
@@ -173,6 +175,34 @@ export default function CampaignDetailPage() {
       });
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleSaveAsTemplate() {
+    if (!campaign) return;
+    const name = prompt("Template name:", campaign.title);
+    if (!name?.trim()) return;
+
+    setSavingTemplate(true);
+    try {
+      const res = await fetch("/api/templates/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: name.trim(),
+          campaignId: campaign.id,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Failed to save");
+      toast({ title: "Template saved to your library" });
+    } catch (err) {
+      toast({
+        title: err instanceof Error ? err.message : "Failed to save template",
+        variant: "destructive",
+      });
+    } finally {
+      setSavingTemplate(false);
     }
   }
 
@@ -317,8 +347,13 @@ export default function CampaignDetailPage() {
           </Card>
 
           <Card>
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Email content</CardTitle>
+              <AiPanel
+                onInsertContent={(c) => setEditContent(c)}
+                onInsertSubject={(s) => setEditSubject(s)}
+                currentContent={editContent}
+              />
             </CardHeader>
             <CardContent className="space-y-2">
               <Label htmlFor="edit-content">Content ({campaign.contentType})</Label>
@@ -469,13 +504,21 @@ export default function CampaignDetailPage() {
             <Button variant="outline" className="gap-2" onClick={openScheduleDialog}>
               <Clock className="h-4 w-4" /> Schedule
             </Button>
+            <Link href={`/dashboard/campaigns/${campaign.id}/edit`}>
+              <Button variant="outline" className="gap-2">
+                <Eye className="h-4 w-4" /> Edit Content
+              </Button>
+            </Link>
             <Button variant="outline" className="gap-2" onClick={startEditing}>
-              <Edit3 className="h-4 w-4" /> Edit
+              <Edit3 className="h-4 w-4" /> Edit Details
             </Button>
           </>
         )}
         <Button variant="outline" className="gap-2" onClick={handleDuplicate}>
           <Copy className="h-4 w-4" /> Duplicate
+        </Button>
+        <Button variant="outline" className="gap-2" onClick={handleSaveAsTemplate} disabled={savingTemplate}>
+          <Save className="h-4 w-4" /> {savingTemplate ? "Saving..." : "Save as Template"}
         </Button>
         <Link href={`/dashboard/campaigns/${campaign.id}/analytics`}>
           <Button variant="outline" className="gap-2">

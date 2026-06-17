@@ -22,6 +22,7 @@ enum SubscriberStatus {
 enum SubscriberSource {
   manual
   import
+  form
   website_form
   instagram
   facebook
@@ -87,6 +88,13 @@ enum PaymentStatus {
   success
   failed
   refunded
+}
+
+enum TemplateSource {
+  OFFICIAL
+  AI_GENERATED
+  INDUSTRY
+  USER_TEMPLATE
 }
 
 model User {
@@ -176,6 +184,8 @@ model Workspace {
   subscriptions    Subscription[]
   analyticsEvents  AnalyticsEvent[]
   analyticsSummary AnalyticsSummary[]
+  aiGenerations    AiGeneration[]
+  aiUsageLimit     AiUsageLimit?
 }
 
 model WorkspaceMember {
@@ -451,6 +461,69 @@ model Template {
   workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@map("templates")
+}
+
+model EmailTemplate {
+  id          String         @id @default(uuid()) @db.Uuid
+  name        String
+  slug        String         @unique
+  description String?
+  category    String?
+  industry    String?
+  source      TemplateSource @default(OFFICIAL)
+  html        String?
+  thumbnail   String?
+  aiPrompt    String?
+  isPublished Boolean        @default(false)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@map("email_templates")
+}
+
+model UserTemplate {
+  id                 String   @id @default(uuid()) @db.Uuid
+  userId             String   @db.Uuid
+  name               String
+  html               String?
+  thumbnail          String?
+  originalTemplateId String?  @db.Uuid
+  createdAt          DateTime @default(now())
+
+  @@map("user_templates")
+}
+
+model AiGeneration {
+  id           String   @id @default(uuid()) @db.Uuid
+  workspaceId  String   @db.Uuid
+  userId       String   @db.Uuid
+  type         String
+  inputTokens  Int      @default(0)
+  outputTokens Int      @default(0)
+  costUSD      Decimal  @db.Decimal(10, 6)
+  model        String
+  prompt       String?
+  result       String?
+  createdAt    DateTime @default(now())
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, createdAt])
+  @@map("ai_generations")
+}
+
+model AiUsageLimit {
+  id            String   @id @default(uuid()) @db.Uuid
+  workspaceId   String   @unique @db.Uuid
+  monthlyLimit  Int      @default(5)
+  usedThisMonth Int      @default(0)
+  resetAt       DateTime
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@map("ai_usage_limits")
 }
 
 model SubscriptionPlan {

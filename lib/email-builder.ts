@@ -5,7 +5,10 @@ export type BlockType =
   | "button"
   | "divider"
   | "footer"
-  | "spacer";
+  | "spacer"
+  | "logo"
+  | "link"
+  | "social";
 
 export type EmailBlock = {
   id: string;
@@ -30,11 +33,21 @@ export function createBlock(type: BlockType): EmailBlock {
       return { id, type, content: { text: "© 2026 Your Company. All rights reserved.", fontSize: "12", color: "#9ca3af" } };
     case "spacer":
       return { id, type, content: { height: "24" } };
+    case "logo":
+      return { id, type, content: { src: "", alt: "Logo", width: "200", alignment: "center", padding: "24" } };
+    case "link":
+      return { id, type, content: { text: "Click here", url: "https://example.com", fontSize: "14", color: "#6366f1", alignment: "center" } };
+    case "social":
+      return { id, type, content: { alignment: "center", facebook: "", twitter: "", instagram: "", linkedin: "", youtube: "" } };
   }
 }
 
+export function blocksToRows(blocks: EmailBlock[]): string {
+  return blocks.map(renderBlock).join("\n");
+}
+
 export function blocksToBodyHtml(blocks: EmailBlock[]): string {
-  const rows = blocks.map(renderBlock).join("\n");
+  const rows = blocksToRows(blocks);
   return `<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;">
     <tr>
       <td align="center" style="padding:24px 16px;">
@@ -115,6 +128,26 @@ function renderBlock(block: EmailBlock): string {
 
     case "spacer":
       return `<tr><td style="padding:0;font-size:${c.height ?? "24"}px;line-height:${c.height ?? "24"}px;">&nbsp;</td></tr>`;
+
+    case "logo":
+      return `<tr><td style="padding:${c.padding ?? "24"}px 32px;text-align:${c.alignment ?? "center"};">
+        ${c.src ? `<img src="${escapeAttr(c.src)}" alt="${escapeAttr(c.alt ?? "Logo")}" style="max-width:${c.width ?? "200"}px;height:auto;display:inline-block;" />` : `<span style="font-size:20px;color:#9ca3af;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">[Logo]</span>`}
+      </td></tr>`;
+
+    case "link":
+      return `<tr><td style="padding:8px 32px;text-align:${c.alignment ?? "center"};">
+        <a href="${escapeAttr(c.url ?? "#")}" style="font-size:${c.fontSize ?? "14"}px;color:${c.color ?? "#6366f1"};text-decoration:underline;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">${escapeHtml(c.text ?? "Click here")}</a>
+      </td></tr>`;
+
+    case "social": {
+      const links = ["facebook", "twitter", "instagram", "linkedin", "youtube"]
+        .filter((k) => c[k])
+        .map((k) => `<a href="${escapeAttr(c[k])}" style="color:#6b7280;text-decoration:none;font-size:14px;margin:0 8px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">${k.charAt(0).toUpperCase() + k.slice(1)}</a>`)
+        .join("");
+      return `<tr><td style="padding:16px 32px;text-align:${c.alignment ?? "center"};">
+        ${links || '<span style="font-size:12px;color:#9ca3af;">Add social media links</span>'}
+      </td></tr>`;
+    }
 
     default:
       return "";
@@ -240,4 +273,7 @@ export const BLOCK_TYPE_LABELS: Record<BlockType, string> = {
   divider: "Divider",
   footer: "Footer",
   spacer: "Spacer",
+  logo: "Logo",
+  link: "Link",
+  social: "Social Media",
 };
