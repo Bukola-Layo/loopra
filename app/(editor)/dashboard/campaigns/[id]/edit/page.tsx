@@ -94,6 +94,7 @@ export default function EditCampaignRoute() {
       onSave={handleSave}
       backHref={`/dashboard/campaigns/${campaign.id}`}
       saving={saving}
+      saveLabel="Save Campaign"
       onSendTest={handleSendTest}
     />
   );

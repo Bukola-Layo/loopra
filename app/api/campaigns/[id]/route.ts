@@ -53,8 +53,8 @@ export async function PATCH(
       return apiError("Campaign not found", 404);
     }
 
-    if (existing.status !== "draft") {
-      return apiError("Can only update draft campaigns", 400);
+    if (existing.status === "sent" || existing.status === "sending") {
+      return apiError("Cannot update sent or sending campaigns", 400);
     }
 
     const campaign = await db.campaign.update({

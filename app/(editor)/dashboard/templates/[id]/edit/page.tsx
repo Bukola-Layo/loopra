@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { VisualEditor } from "@/components/email-editor/visual-editor";
 import { type EmailBlock, deserializeBlocks, serializeBlocks, createBlock } from "@/lib/email-builder";
+import { useEditorStore } from "@/store/use-editor-store";
 import { toast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 
@@ -15,6 +16,8 @@ type TemplateData = {
 
 export default function EditTemplateRoute() {
   const params = useParams();
+  const router = useRouter();
+  const currentBlocks = useEditorStore((s) => s.blocks);
   const [template, setTemplate] = useState<TemplateData | null>(null);
   const [blocks, setBlocks] = useState<EmailBlock[] | null>(null);
   const [loading, setLoading] = useState(true);
@@ -24,7 +27,6 @@ export default function EditTemplateRoute() {
   useEffect(() => {
     if (!params?.id) return;
 
-    // Try old Template API first, fallback to UserTemplate API
     fetch(`/api/templates/${params.id}`)
       .then((r) => {
         if (!r.ok) throw new Error("Not found");
@@ -59,18 +61,69 @@ export default function EditTemplateRoute() {
       .finally(() => setLoading(false));
   }, [params?.id]);
 
+  async function handleDuplicate() {
+    if (!template) return;
+    const serialized = serializeBlocks(currentBlocks.length ? currentBlocks : blocks!);
+    try {
+      const res = await fetch("/api/templates", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: `${template.name} (copy)`,
+          content: serialized,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Failed to duplicate");
+      toast({ title: "Template duplicated" });
+      router.push(`/dashboard/templates/${data.template.id}/edit`);
+    } catch (err) {
+      toast({
+        title: err instanceof Error ? err.message : "Failed to duplicate",
+        variant: "destructive",
+      });
+    }
+  }
+
+  async function handleUseInCampaign() {
+    if (!template) return;
+    const serialized = serializeBlocks(currentBlocks.length ? currentBlocks : blocks!);
+    try {
+      const res = await fetch("/api/campaigns", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: template.name,
+          subject: `New campaign from ${template.name}`,
+          content: serialized,
+          contentType: "html",
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Failed to create campaign");
+      toast({ title: "Campaign created from template" });
+      router.push(`/dashboard/campaigns/${data.campaign.id}/edit`);
+    } catch (err) {
+      toast({
+        title: err instanceof Error ? err.message : "Failed to create campaign",
+        variant: "destructive",
+      });
+    }
+  }
+
   async function handleSave(updatedBlocks: EmailBlock[]) {
     if (!template) return;
     setSaving(true);
     try {
       const serialized = serializeBlocks(updatedBlocks);
+      const currentName = useEditorStore.getState().documentName;
 
       if (isUserTemplate) {
         const res = await fetch(`/api/templates/user/${template.id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            name: template.name,
+            name: currentName,
             html: serialized,
           }),
         });
@@ -80,12 +133,15 @@ export default function EditTemplateRoute() {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
+            name: currentName,
             content: serialized,
           }),
         });
         if (!res.ok) throw new Error("Failed to update");
       }
 
+      setTemplate((prev) => prev ? { ...prev, name: currentName } : null);
+      useEditorStore.getState().markClean();
       toast({ title: "Template saved" });
     } catch (err) {
       toast({
@@ -120,6 +176,8 @@ export default function EditTemplateRoute() {
       onSave={handleSave}
       backHref="/dashboard/templates"
       saving={saving}
+      onDuplicate={handleDuplicate}
+      onUseInCampaign={handleUseInCampaign}
     />
   );
 }

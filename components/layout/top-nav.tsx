@@ -1,7 +1,7 @@
 "use client";
 
 import { useSession, signOut } from "next-auth/react";
-import { LogOut, User } from "lucide-react";
+import { Bell, LogOut, User } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -25,6 +25,14 @@ export function TopNav() {
 
   return (
     <header className="flex h-16 items-center justify-end gap-4 border-b bg-background px-6">
+      <div className="rounded-full p-[1.5px]" style={{ background: "conic-gradient(from 0deg, rgba(99,102,241,0.2), rgba(236,72,153,0.2), rgba(99,102,241,0.2))" }}>
+        <Button variant="ghost" size="icon" className="relative rounded-full bg-background" aria-label="Notifications">
+          <Bell className="h-5 w-5" />
+          <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-primary-foreground">
+            3
+          </span>
+        </Button>
+      </div>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="flex items-center gap-2 px-2">

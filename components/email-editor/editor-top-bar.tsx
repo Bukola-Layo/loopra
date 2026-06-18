@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, Monitor, Smartphone, Send, Save, Loader2 } from "lucide-react";
+import { ArrowLeft, Monitor, Smartphone, Send, Save, Loader2, Copy, PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEditorStore, type Viewport } from "@/store/use-editor-store";
 import { cn } from "@/lib/utils";
@@ -11,6 +11,8 @@ type EditorTopBarProps = {
   saveLabel?: string;
   onSave: () => void;
   onSendTest?: () => void;
+  onDuplicate?: () => void;
+  onUseInCampaign?: () => void;
   saving?: boolean;
 };
 
@@ -19,6 +21,8 @@ export function EditorTopBar({
   saveLabel = "Save Template",
   onSave,
   onSendTest,
+  onDuplicate,
+  onUseInCampaign,
   saving = false,
 }: EditorTopBarProps) {
   const viewport = useEditorStore((s) => s.viewport);
@@ -39,9 +43,12 @@ export function EditorTopBar({
         <div className="w-px h-5 bg-border" />
         <div className="flex items-center gap-2">
           <span className="text-xs text-muted-foreground">Draft /</span>
-          <span className="text-sm font-semibold text-foreground truncate max-w-[200px]">
-            {documentName}
-          </span>
+          <input
+            value={documentName}
+            onChange={(e) => useEditorStore.getState().setDocumentName(e.target.value)}
+            className="text-sm font-semibold text-foreground bg-transparent border-none outline-none focus:ring-0 focus:border-b focus:border-primary truncate max-w-[200px] px-0 py-0"
+            placeholder="Template name"
+          />
           {isDirty && (
             <span className="w-2 h-2 rounded-full bg-amber-400" title="Unsaved changes" />
           )}
@@ -69,7 +76,19 @@ export function EditorTopBar({
         {onSendTest && (
           <Button variant="outline" size="sm" className="gap-1.5" onClick={onSendTest}>
             <Send className="h-3.5 w-3.5" />
-            Send Test Email
+            Send Test
+          </Button>
+        )}
+        {onDuplicate && (
+          <Button variant="outline" size="sm" className="gap-1.5" onClick={onDuplicate}>
+            <Copy className="h-3.5 w-3.5" />
+            Duplicate
+          </Button>
+        )}
+        {onUseInCampaign && (
+          <Button variant="outline" size="sm" className="gap-1.5" onClick={onUseInCampaign}>
+            <PlusCircle className="h-3.5 w-3.5" />
+            Use in Campaign
           </Button>
         )}
         <Button

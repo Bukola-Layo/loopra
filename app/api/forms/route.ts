@@ -16,6 +16,7 @@ const fieldSchema = z.object({
 const createFormSchema = z.object({
   name: z.string().min(1).max(200),
   description: z.string().optional(),
+  pageId: z.string().uuid().optional(),
   fields: z.array(fieldSchema).min(1),
   settings: z.record(z.unknown()).optional(),
 });
@@ -25,7 +26,10 @@ export async function GET(req: NextRequest) {
     const workspaceId = await getWorkspaceId();
     const forms = await db.form.findMany({
       where: { workspaceId },
-      include: { fields: { orderBy: { position: "asc" } } },
+      include: {
+        fields: { orderBy: { position: "asc" } },
+        page: { select: { id: true, name: true, slug: true } },
+      },
       orderBy: { createdAt: "desc" },
     });
 
@@ -52,12 +56,13 @@ export async function POST(req: NextRequest) {
         workspaceId,
         name: formData.name,
         description: formData.description,
+        pageId: formData.pageId,
         settings: formData.settings as Prisma.InputJsonValue | undefined,
         fields: {
           create: fields,
         },
       },
-      include: { fields: true },
+      include: { fields: true, page: { select: { id: true, name: true, slug: true } } },
     });
 
     return apiSuccess({ form }, 201);

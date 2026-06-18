@@ -21,6 +21,7 @@ export async function GET(req: NextRequest) {
     const page = parseInt(searchParams.get("page") ?? "1");
     const limit = parseInt(searchParams.get("limit") ?? "20");
     const search = searchParams.get("search") ?? "";
+    const pageId = searchParams.get("pageId") ?? "";
 
     const where: Prisma.SubscriberWhereInput = { workspaceId };
     if (search) {
@@ -29,6 +30,9 @@ export async function GET(req: NextRequest) {
         { firstName: { contains: search, mode: "insensitive" } },
         { lastName: { contains: search, mode: "insensitive" } },
       ];
+    }
+    if (pageId) {
+      where.pageId = pageId;
     }
 
     const [subscribers, total] = await Promise.all([

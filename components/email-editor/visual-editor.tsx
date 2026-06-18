@@ -44,6 +44,8 @@ type VisualEditorProps = {
   saveLabel?: string;
   saving?: boolean;
   onSendTest?: () => void;
+  onDuplicate?: () => void;
+  onUseInCampaign?: () => void;
 };
 
 export function VisualEditor({
@@ -54,6 +56,8 @@ export function VisualEditor({
   saveLabel,
   saving,
   onSendTest,
+  onDuplicate,
+  onUseInCampaign,
 }: VisualEditorProps) {
   const loadBlocks = useEditorStore((s) => s.loadBlocks);
   const addBlock = useEditorStore((s) => s.addBlock);
@@ -111,6 +115,8 @@ export function VisualEditor({
         saveLabel={saveLabel}
         saving={saving}
         onSendTest={onSendTest}
+        onDuplicate={onDuplicate}
+        onUseInCampaign={onUseInCampaign}
       />
 
       <div className="flex flex-1 overflow-hidden">

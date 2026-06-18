@@ -103,7 +103,7 @@ export default function TemplatesPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Link href="/dashboard/templates/new">
+          <Link href="/dashboard/templates/new/edit">
             <Button className="gap-2">
               <Plus className="h-4 w-4" />
               Create template
@@ -136,7 +136,7 @@ export default function TemplatesPage() {
               description="Create your own template or duplicate one from the library."
               action={{
                 label: "Create template",
-                onClick: () => router.push("/dashboard/templates/new"),
+                onClick: () => router.push("/dashboard/templates/new/edit"),
               }}
             />
           ) : (

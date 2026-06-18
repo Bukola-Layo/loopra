@@ -16,8 +16,10 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { ArrowLeft, Send, Clock, Copy, BarChart3, Edit3, Save, X, Eye, MousePointerClick, AlertTriangle, UserX, Mail, Sparkles } from "lucide-react";
+import { ArrowLeft, Send, Clock, Copy, BarChart3, Edit3, Save, X, Eye, MousePointerClick, AlertTriangle, UserX, Mail, Sparkles, Trash2 } from "lucide-react";
 import { AiPanel } from "@/components/ai/ai-panel";
+import { TemplatePreview } from "@/components/templates/template-preview";
+import { anyToHtml } from "@/lib/email-builder";
 import { toast } from "@/hooks/use-toast";
 import Link from "next/link";
 
@@ -289,6 +291,19 @@ export default function CampaignDetailPage() {
     }
   }
 
+  async function handleDelete() {
+    if (!campaign) return;
+    if (!confirm("Delete this campaign? This cannot be undone.")) return;
+    try {
+      const res = await fetch(`/api/campaigns/${campaign.id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Failed to delete");
+      toast({ title: "Campaign deleted" });
+      router.push("/dashboard/campaigns");
+    } catch {
+      toast({ title: "Failed to delete campaign", variant: "destructive" });
+    }
+  }
+
   if (loading) {
     return (
       <div className="space-y-6">
@@ -525,6 +540,9 @@ export default function CampaignDetailPage() {
             <BarChart3 className="h-4 w-4" /> Analytics
           </Button>
         </Link>
+        <Button variant="outline" className="gap-2 text-destructive hover:text-destructive" onClick={handleDelete}>
+          <Trash2 className="h-4 w-4" /> Delete
+        </Button>
       </div>
 
       {campaign.content && (
@@ -532,14 +550,11 @@ export default function CampaignDetailPage() {
           <CardHeader>
             <CardTitle>Content</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-0">
             {campaign.contentType === "html" ? (
-              <div
-                className="prose prose-sm max-w-none dark:prose-invert"
-                dangerouslySetInnerHTML={{ __html: campaign.content }}
-              />
+              <TemplatePreview html={anyToHtml(campaign.content)} />
             ) : (
-              <div className="prose prose-sm max-w-none dark:prose-invert whitespace-pre-wrap">
+              <div className="prose prose-sm max-w-none dark:prose-invert whitespace-pre-wrap p-6">
                 {campaign.content}
               </div>
             )}

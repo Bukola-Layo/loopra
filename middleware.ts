@@ -9,6 +9,7 @@ export default withAuth({
       if (pathname.startsWith("/api/webhooks")) return true;
       if (pathname.startsWith("/api/embed")) return true;
       if (pathname.match(/^\/api\/forms\/[\w-]+\/submit$/)) return true;
+      if (pathname.startsWith("/p/")) return true;
       if (pathname.startsWith("/dashboard") && !token) return false;
       if (pathname.startsWith("/onboarding") && !token) return false;
       if (pathname.startsWith("/api") && !token) return false;
@@ -19,6 +20,6 @@ export default withAuth({
 });
 
 export const config = {
-  matcher: ["/f/:path*", "/dashboard/:path*", "/api/:path*", "/onboarding"],
+  matcher: ["/f/:path*", "/p/:path*", "/dashboard/:path*", "/api/:path*", "/onboarding"],
 };
  

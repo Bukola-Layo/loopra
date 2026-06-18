@@ -2,6 +2,7 @@ import Link from "next/link";
 import { MarketingLayout } from "@/components/layout/marketing-layout";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Users, Mail, GitFork, BarChart3, Check } from "lucide-react";
+import { FaqItem } from "@/components/marketing/faq-item";
 import {
   Card,
   CardContent,
@@ -82,9 +83,9 @@ const plans = [
 export default function LandingPage() {
   return (
     <MarketingLayout>
-      <section className="container py-24 md:py-32">
+      <section className="container py-24 md:py-32 animate-fade-in-up">
         <div className="mx-auto max-w-3xl text-center space-y-8">
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
+          <h1 className="text-4xl md:text-6xl font-bold tracking-tight animate-float">
             The easiest way to grow and automate{" "}
             <span style={{ color: "var(--color-role-primary)" }}>
               audience communication
@@ -109,7 +110,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="border-t py-24">
+      <section className="border-t py-24 animate-fade-in-up" style={{ animationDelay: "0.2s" }}>
         <div className="container">
           <div className="text-center mb-16 space-y-4">
             <h2 className="text-3xl font-bold tracking-tight">
@@ -124,7 +125,7 @@ export default function LandingPage() {
             {features.map((feature) => (
               <div
                 key={feature.title}
-                className="relative rounded-xl p-px"
+                className="relative rounded-xl p-px transition-transform duration-300 hover:scale-105"
                 style={{
                   background:
                     "linear-gradient(135deg, rgba(236,57,82,0.15), rgba(236,57,82,0.05), rgba(44,173,192,0.15))",
@@ -151,7 +152,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section id="pricing" className="border-t py-24 bg-muted/30">
+      <section id="pricing" className="border-t py-24 bg-muted/30 animate-fade-in-up" style={{ animationDelay: "0.4s" }}>
         <div className="container">
           <div className="text-center mb-16 space-y-4">
             <h2 className="text-3xl font-bold tracking-tight">
@@ -215,7 +216,52 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="border-t py-24" style={{ backgroundColor: "var(--color-primary-color-0)" }}>
+      <section id="faq" className="border-t py-24 animate-fade-in-up" style={{ animationDelay: "0.6s" }}>
+        <div className="container max-w-3xl">
+          <div className="text-center mb-16 space-y-4">
+            <h2 className="text-3xl font-bold tracking-tight">Frequently asked questions</h2>
+            <p className="text-muted-foreground max-w-xl mx-auto">
+              Everything you need to know about Loopra.
+            </p>
+          </div>
+          <div className="space-y-3">
+            <FaqItem
+              question="What is Loopra?"
+              answer="Loopra is a communication automation platform for creators, startups, and small businesses. It lets you collect subscribers, send newsletters, build automation workflows, segment audiences, and track engagement — all without coding."
+            />
+            <FaqItem
+              question="Is there a free plan?"
+              answer="Yes! Our Free plan supports up to 1,000 subscribers with basic analytics and email support. No credit card required to get started."
+            />
+            <FaqItem
+              question="Can I send emails to my existing subscribers?"
+              answer="Absolutely. You can import your existing subscriber list via CSV or connect with popular tools. We handle deduplication and ensure compliance with email regulations."
+            />
+            <FaqItem
+              question="What are Automation Loops?"
+              answer="Loops are visual automation workflows that trigger based on subscriber actions — like signing up, clicking a link, or opening an email. You can build multi-step sequences without any coding."
+            />
+            <FaqItem
+              question="Can I create custom email templates?"
+              answer="Yes. Use our drag-and-drop visual editor to design beautiful emails. You can start from pre-built library templates or create your own from scratch."
+            />
+            <FaqItem
+              question="How does AI content generation work?"
+              answer="Describe the email you want, and our AI generates a complete design with text and layout. You can then customize every block in the visual editor."
+            />
+            <FaqItem
+              question="Can I upgrade or cancel anytime?"
+              answer="Yes. You can upgrade, downgrade, or cancel your subscription at any time. If you cancel, you'll retain access to paid features until the end of your billing period."
+            />
+            <FaqItem
+              question="Is my data secure?"
+              answer="We take security seriously. All data is encrypted in transit and at rest. We use industry-standard practices and never share your data with third parties."
+            />
+          </div>
+        </div>
+      </section>
+
+      <section className="border-t py-24 animate-fade-in-up" style={{ animationDelay: "0.8s", backgroundColor: "var(--color-primary-color-0)" }}>
         <div className="container text-center space-y-8">
           <h2 className="text-3xl font-bold tracking-tight">
             Ready to simplify your audience communication?

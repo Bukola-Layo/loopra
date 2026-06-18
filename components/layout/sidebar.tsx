@@ -12,23 +12,37 @@ import {
   BarChart3,
   Settings,
   ChevronLeft,
+  ChevronDown,
+  ExternalLink,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useState } from "react";
 
-const navItems = [
-  {
-    label: "Dashboard",
-    href: "/dashboard",
-    icon: LayoutDashboard,
-  },
+type NavGroup = {
+  label: string;
+  icon: React.ElementType;
+  children: Array<{
+    label: string;
+    href: string;
+    icon: React.ElementType;
+  }>;
+};
+
+const navGroups: NavGroup[] = [
   {
     label: "Audience",
-    href: "/dashboard/audience",
     icon: Users,
+    children: [
+      { label: "Pages", href: "/dashboard/audience/pages", icon: ExternalLink },
+      { label: "Forms", href: "/dashboard/audience/forms", icon: FormInput },
+      { label: "Subscribers", href: "/dashboard/audience", icon: Users },
+    ],
   },
+];
+
+const bottomNavItems = [
   {
     label: "Campaigns",
     href: "/dashboard/campaigns",
@@ -40,11 +54,6 @@ const navItems = [
     icon: FileText,
   },
   {
-    label: "Forms",
-    href: "/dashboard/forms",
-    icon: FormInput,
-  },
-  {
     label: "Loops",
     href: "/dashboard/loops",
     icon: GitFork,
@@ -53,11 +62,6 @@ const navItems = [
     label: "Analytics",
     href: "/dashboard/analytics",
     icon: BarChart3,
-  },
-  {
-    label: "Settings",
-    href: "/dashboard/settings",
-    icon: Settings,
   },
 ];
 
@@ -97,10 +101,27 @@ export function Sidebar() {
         </Button>
       </div>
       <Separator />
-      <nav className="flex-1 space-y-1 p-3">
-        {navItems.map((item) => {
-          const isActive = pathname === item.href ||
-            (item.href !== "/dashboard" && pathname.startsWith(item.href));
+      <nav className="flex-1 space-y-1 p-3 overflow-y-auto">
+        <Link
+          href="/dashboard"
+          className={cn(
+            "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+            pathname === "/dashboard"
+              ? "bg-primary/10 text-primary"
+              : "text-sidebar-foreground hover:bg-sidebar-muted",
+            collapsed && "justify-center px-2"
+          )}
+        >
+          <LayoutDashboard className="h-5 w-5 shrink-0" />
+          {!collapsed && <span>Dashboard</span>}
+        </Link>
+
+        {navGroups.map((group) => (
+          <NavGroupSection key={group.label} group={group} collapsed={collapsed} pathname={pathname} />
+        ))}
+
+        {bottomNavItems.map((item) => {
+          const isActive = pathname.startsWith(item.href);
 
           return (
             <Link
@@ -119,7 +140,85 @@ export function Sidebar() {
             </Link>
           );
         })}
+
+        <Link
+          href="/dashboard/settings"
+          className={cn(
+            "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+            pathname.startsWith("/dashboard/settings")
+              ? "bg-primary/10 text-primary"
+              : "text-sidebar-foreground hover:bg-sidebar-muted",
+            collapsed && "justify-center px-2"
+          )}
+        >
+          <Settings className="h-5 w-5 shrink-0" />
+          {!collapsed && <span>Settings</span>}
+        </Link>
       </nav>
     </aside>
+  );
+}
+
+function NavGroupSection({
+  group,
+  collapsed,
+  pathname,
+}: {
+  group: NavGroup;
+  collapsed: boolean;
+  pathname: string;
+}) {
+  const isGroupActive = group.children.some(
+    (child) => pathname === child.href || pathname.startsWith(child.href)
+  );
+  const [expanded, setExpanded] = useState(collapsed ? false : isGroupActive);
+
+  return (
+    <div>
+      <button
+        onClick={() => !collapsed && setExpanded(!expanded)}
+        className={cn(
+          "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+          "text-sidebar-foreground hover:bg-sidebar-muted",
+          collapsed && "justify-center px-2"
+        )}
+      >
+        <group.icon className="h-5 w-5 shrink-0" />
+        {!collapsed && (
+          <>
+            <span className="flex-1 text-left">{group.label}</span>
+            <ChevronDown
+              className={cn(
+                "h-4 w-4 transition-transform",
+                expanded && "rotate-180"
+              )}
+            />
+          </>
+        )}
+      </button>
+      {!collapsed && expanded && (
+        <div className="ml-2 mt-1 space-y-0.5 border-l pl-2">
+          {group.children.map((child) => {
+            const isChildActive = pathname === child.href ||
+              pathname.startsWith(child.href);
+            return (
+              <Link
+                key={child.href}
+                href={child.href}
+                className={cn(
+                  "flex items-center gap-3 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
+                  isChildActive
+                    ? "bg-primary/10 text-primary"
+                    : "text-sidebar-foreground hover:bg-sidebar-muted"
+                )}
+              >
+                <child.icon className="h-4 w-4 shrink-0" />
+                <span>{child.label}</span>
+              </Link>
+            );
+          })}
+        </div>
+      )}
+    </div>
   );
 }

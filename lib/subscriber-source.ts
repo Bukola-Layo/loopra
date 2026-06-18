@@ -1,12 +1,14 @@
-import { Globe, Smartphone, Megaphone, Mail, FileSpreadsheet, Terminal, Plus } from "lucide-react";
+import { Globe, Smartphone, Megaphone, Mail, FileSpreadsheet, Terminal, ExternalLink, Plus } from "lucide-react";
 
 export const SUBSCRIBER_SOURCES = [
   { value: "manual", label: "Manual", icon: Plus },
   { value: "import", label: "CSV Import", icon: FileSpreadsheet },
+  { value: "form", label: "Form", icon: Globe },
   { value: "website_form", label: "Website Form", icon: Globe },
   { value: "instagram", label: "Instagram", icon: Smartphone },
   { value: "facebook", label: "Facebook Ads", icon: Megaphone },
   { value: "newsletter", label: "Newsletter", icon: Mail },
+  { value: "page", label: "Page", icon: ExternalLink },
   { value: "api", label: "API", icon: Terminal },
   { value: "other", label: "Other", icon: Plus },
 ] as const;
