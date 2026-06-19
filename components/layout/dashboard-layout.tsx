@@ -5,6 +5,7 @@ import { SessionProvider } from "next-auth/react";
 import { Sidebar } from "@/components/layout/sidebar";
 import { TopNav } from "@/components/layout/top-nav";
 import { Toaster } from "@/components/ui/toaster";
+import { OnboardingChecklist, OnboardingOverlay, FloatingHelp } from "@/components/onboarding";
 
 type DashboardLayoutProps = {
   children: ReactNode;
@@ -22,6 +23,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </main>
         </div>
       </div>
+      <OnboardingChecklist />
+      <OnboardingOverlay />
+      <FloatingHelp />
       <Toaster />
     </SessionProvider>
   );

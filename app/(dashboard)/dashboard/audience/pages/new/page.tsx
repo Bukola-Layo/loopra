@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
+import { useOnboardingStore } from "@/store/use-onboarding-store";
 import {
   ArrowLeft,
   Check,
@@ -27,6 +28,9 @@ import {
   Send,
   Image,
   ChevronRight,
+  Upload,
+  X,
+  Mail,
 } from "lucide-react";
 
 const STEPS = [
@@ -67,9 +71,24 @@ export default function NewPage() {
   const [step, setStep] = useState(0);
   const [saving, setSaving] = useState(false);
 
+  const { completeStep, showOverlay } = useOnboardingStore();
+
   useEffect(() => {
     setOrigin(window.location.origin);
   }, []);
+
+  useEffect(() => {
+    if (step !== 3) return;
+    setLoopsLoading(true);
+    setCampaignsLoading(true);
+    Promise.all([
+      fetch("/api/loops").then((r) => r.json()).then((res) => setLoops(res.loops ?? [])).catch(() => {}),
+      fetch("/api/campaigns").then((r) => r.json()).then((res) => setCampaigns(res.campaigns ?? [])).catch(() => {}),
+    ]).finally(() => {
+      setLoopsLoading(false);
+      setCampaignsLoading(false);
+    });
+  }, [step]);
 
   const [form, setForm] = useState({
     name: "",
@@ -82,8 +101,18 @@ export default function NewPage() {
     accentColor: "#dd2d4a",
     formType: "name-email",
     afterSubscribe: "none",
+    loopId: "",
+    campaignId: "",
     publishAfterCreate: false,
   });
+
+  type Loop = { id: string; name: string; status: string; trigger: { type: string } | null };
+  const [loops, setLoops] = useState<Loop[]>([]);
+  const [loopsLoading, setLoopsLoading] = useState(false);
+
+  type CampaignOption = { id: string; title: string };
+  const [campaigns, setCampaigns] = useState<CampaignOption[]>([]);
+  const [campaignsLoading, setCampaignsLoading] = useState(false);
 
   function onNameChange(value: string) {
     const slugFromName = value.toLowerCase().replace(/[^a-z0-9-]/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "");
@@ -99,7 +128,10 @@ export default function NewPage() {
       case 0: return !!form.template;
       case 1: return !!form.name.trim() && !!form.slug.trim();
       case 2: return true;
-      case 3: return true;
+      case 3:
+        if (form.afterSubscribe === "start_loop") return !!form.loopId;
+        if (form.afterSubscribe === "welcome_email") return !!form.campaignId;
+        return true;
       case 4: return true;
       default: return false;
     }
@@ -124,6 +156,8 @@ export default function NewPage() {
             buttonText: form.buttonText,
             formType: form.formType,
             afterSubscribe: form.afterSubscribe,
+            loopId: form.afterSubscribe === "start_loop" ? form.loopId : undefined,
+            campaignId: form.afterSubscribe === "welcome_email" ? form.campaignId : undefined,
             collectName: form.formType !== "email-only",
           },
         }),
@@ -149,6 +183,8 @@ export default function NewPage() {
       }
 
       toast({ title: "Page created successfully" });
+      completeStep("create_page");
+      showOverlay("add_subscriber");
       router.push(`/dashboard/audience/pages/${data.page.id}`);
     } catch {
       toast({ title: "Failed to create page", variant: "destructive" });
@@ -248,28 +284,20 @@ export default function NewPage() {
               <CardContent className="pt-6 space-y-5">
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <Label>Logo URL</Label>
-                    <div className="relative">
-                      <Image className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                      <Input
-                        placeholder="https://example.com/logo.png"
-                        value={form.logo}
-                        onChange={(e) => setForm({ ...form, logo: e.target.value })}
-                        className="pl-9"
-                      />
-                    </div>
+                    <Label>Logo</Label>
+                    <ImageUpload
+                      value={form.logo}
+                      onChange={(v) => setForm({ ...form, logo: v })}
+                      accept="image/*"
+                    />
                   </div>
                   <div className="space-y-2">
-                    <Label>Cover Image URL</Label>
-                    <div className="relative">
-                      <Image className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                      <Input
-                        placeholder="https://example.com/cover.png"
-                        value={form.coverImage}
-                        onChange={(e) => setForm({ ...form, coverImage: e.target.value })}
-                        className="pl-9"
-                      />
-                    </div>
+                    <Label>Cover Image</Label>
+                    <ImageUpload
+                      value={form.coverImage}
+                      onChange={(v) => setForm({ ...form, coverImage: v })}
+                      accept="image/*"
+                    />
                   </div>
                 </div>
                 <div className="space-y-2">
@@ -384,7 +412,9 @@ export default function NewPage() {
                 <button
                   key={opt.id}
                   type="button"
-                  onClick={() => setForm({ ...form, afterSubscribe: opt.id })}
+                  onClick={() => {
+                    setForm({ ...form, afterSubscribe: opt.id, loopId: opt.id !== "start_loop" ? "" : form.loopId });
+                  }}
                   className={cn(
                     "relative rounded-xl border p-5 text-left transition-all hover:border-primary/50",
                     form.afterSubscribe === opt.id ? "border-primary ring-1 ring-primary bg-primary/5" : "border-input bg-card"
@@ -400,6 +430,111 @@ export default function NewPage() {
                 </button>
               ))}
             </div>
+
+            {form.afterSubscribe === "welcome_email" && (
+              <Card>
+                <CardContent className="pt-6 space-y-4">
+                  <div>
+                    <Label>Welcome Campaign</Label>
+                    {campaignsLoading ? (
+                      <p className="text-sm text-muted-foreground mt-1">Loading campaigns...</p>
+                    ) : campaigns.length === 0 ? (
+                      <div className="mt-1.5 rounded-lg border border-dashed p-4 text-center">
+                        <p className="text-sm text-muted-foreground mb-3">
+                          No campaigns yet. Create a welcome campaign to send when someone subscribes.
+                        </p>
+                        <Link href="/dashboard/campaigns" target="_blank">
+                          <Button type="button" variant="outline" size="sm">
+                            <Mail className="h-3.5 w-3.5 mr-1.5" />
+                            Create Campaign
+                          </Button>
+                        </Link>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="flex items-center gap-2 mt-1.5">
+                          <Select
+                            value={form.campaignId}
+                            onValueChange={(v) => setForm({ ...form, campaignId: v })}
+                          >
+                            <SelectTrigger className="flex-1">
+                              <SelectValue placeholder="Choose a campaign..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {campaigns.map((c) => (
+                                <SelectItem key={c.id} value={c.id}>
+                                  {c.title}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <Link href="/dashboard/campaigns" target="_blank">
+                            <Button type="button" variant="outline" size="sm" className="shrink-0 gap-1.5">
+                              <Mail className="h-3.5 w-3.5" />
+                              New
+                            </Button>
+                          </Link>
+                        </div>
+                        {form.campaignId && (
+                          <p className="text-xs text-muted-foreground mt-2">
+                            This campaign will be sent automatically when a new subscriber signs up.
+                          </p>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {form.afterSubscribe === "start_loop" && (
+              <Card>
+                <CardContent className="pt-6 space-y-4">
+                  <div>
+                    <Label>Select Loop</Label>
+                    {loopsLoading ? (
+                      <p className="text-sm text-muted-foreground mt-1">Loading loops...</p>
+                    ) : (
+                      <>
+                        <div className="flex items-center gap-2 mt-1.5">
+                          <Select
+                            value={form.loopId}
+                            onValueChange={(v) => setForm({ ...form, loopId: v })}
+                          >
+                            <SelectTrigger className="flex-1">
+                              <SelectValue placeholder="Choose a loop..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {loops.length === 0 && (
+                                <SelectItem value="__none" disabled>
+                                  No loops available
+                                </SelectItem>
+                              )}
+                              {loops.map((loop) => (
+                                <SelectItem key={loop.id} value={loop.id}>
+                                  {loop.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <Link href="/dashboard/loops/new" target="_blank">
+                            <Button type="button" variant="outline" size="sm" className="shrink-0 gap-1.5">
+                              <Zap className="h-3.5 w-3.5" />
+                              New Loop
+                            </Button>
+                          </Link>
+                        </div>
+                        {form.loopId && (
+                          <p className="text-xs text-muted-foreground mt-2">
+                            This loop will be triggered when a new subscriber signs up.
+                          </p>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
         )}
 
@@ -433,6 +568,16 @@ export default function NewPage() {
                     <p className="text-sm font-medium capitalize">
                       {AFTER_SUBSCRIBE_OPTIONS.find((o) => o.id === form.afterSubscribe)?.label}
                     </p>
+                    {form.afterSubscribe === "start_loop" && form.loopId && (
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        Loop: {loops.find((l) => l.id === form.loopId)?.name ?? form.loopId}
+                      </p>
+                    )}
+                    {form.afterSubscribe === "welcome_email" && form.campaignId && (
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        Campaign: {campaigns.find((c) => c.id === form.campaignId)?.title ?? form.campaignId}
+                      </p>
+                    )}
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground">Accent color</p>
@@ -488,6 +633,77 @@ export default function NewPage() {
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+function ImageUpload({
+  value,
+  onChange,
+  accept,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  accept: string;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  function handleFile(file: File) {
+    if (!file.type.startsWith("image/")) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      if (typeof e.target?.result === "string") {
+        onChange(e.target.result);
+      }
+    };
+    reader.readAsDataURL(file);
+  }
+
+  return (
+    <div
+      onClick={() => inputRef.current?.click()}
+      className={cn(
+        "relative flex h-32 cursor-pointer items-center justify-center rounded-lg border-2 border-dashed transition-colors hover:border-primary/50",
+        value ? "border-transparent bg-muted/20" : "border-border"
+      )}
+    >
+      {value ? (
+        <>
+          <img
+            src={value}
+            alt="Preview"
+            className="h-full w-full rounded-lg object-cover"
+          />
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onChange("");
+            }}
+            className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-background/80 text-muted-foreground hover:text-foreground shadow-sm"
+          >
+            <X className="h-3 w-3" />
+          </button>
+          <span className="absolute bottom-2 left-2 rounded bg-background/80 px-2 py-0.5 text-[10px] text-muted-foreground">
+            Click to replace
+          </span>
+        </>
+      ) : (
+        <div className="flex flex-col items-center gap-1">
+          <Upload className="h-5 w-5 text-muted-foreground" />
+          <p className="text-xs text-muted-foreground">Upload image</p>
+        </div>
+      )}
+      <input
+        ref={inputRef}
+        type="file"
+        accept={accept}
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) handleFile(file);
+        }}
+      />
     </div>
   );
 }

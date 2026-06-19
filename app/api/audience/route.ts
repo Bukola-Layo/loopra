@@ -4,6 +4,7 @@ import type { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { getWorkspaceId } from "@/lib/auth";
 import { apiSuccess, apiError, handleApiError } from "@/types/api";
+import { createNotification } from "@/lib/notification";
 
 const createSubscriberSchema = z.object({
   email: z.string().email(),
@@ -86,6 +87,14 @@ export async function POST(req: NextRequest) {
           : undefined,
       },
       include: { tags: true },
+    });
+
+    await createNotification({
+      workspaceId,
+      type: "subscriber_added",
+      title: "New subscriber",
+      description: `${email} subscribed to your audience`,
+      link: "/dashboard/audience",
     });
 
     return apiSuccess({ subscriber }, 201);

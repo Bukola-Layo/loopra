@@ -55,6 +55,7 @@ const config: Config = {
           foreground: "hsl(var(--sidebar-foreground))",
           muted: "hsl(var(--sidebar-muted))",
           accent: "var(--color-accent-3)",
+          selected: "color-mix(in srgb, var(--color-secondary-1) 5%, transparent)",
           border: "hsl(var(--sidebar-border))",
         },
       },

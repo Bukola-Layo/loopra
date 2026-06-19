@@ -18,6 +18,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Users, Search, Upload, Download, ChevronRight, Plus, X, FileText, CheckCircle, AlertCircle, Mail, Calendar, Edit, Trash2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { useOnboardingStore } from "@/store/use-onboarding-store";
 import { parseCSV, previewCSV, mapCSVToSubscribers, type CSVPreview, type FieldMapping } from "@/lib/csv";
 import { tagColorStyle } from "@/lib/tag-colors";
 import { subscriberStatusStyle } from "@/lib/subscriber-status";
@@ -56,6 +57,9 @@ export default function AudiencePage() {
   const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
+
+  const { showOverlay, isStepCompleted, isOverlayDismissed, completeStep } =
+    useOnboardingStore();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -110,6 +114,12 @@ export default function AudiencePage() {
   useEffect(() => {
     fetchSubscribers();
   }, [fetchSubscribers]);
+
+  useEffect(() => {
+    if (!loading && subscribers.length > 0 && !isStepCompleted("add_subscriber") && !isOverlayDismissed("add_subscriber")) {
+      completeStep("add_subscriber");
+    }
+  }, [loading, subscribers.length]);
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search), 300);

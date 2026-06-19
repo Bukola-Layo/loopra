@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/hooks/use-toast";
+import { useOnboardingStore } from "@/store/use-onboarding-store";
 import {
   Dialog,
   DialogContent,
@@ -99,6 +100,8 @@ export default function PageDetail() {
   const [loading, setLoading] = useState(true);
   const [showDelete, setShowDelete] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
+
+  const { completeStep } = useOnboardingStore();
 
   const [subscribers, setSubscribers] = useState<PageSubscriber[]>([]);
   const [subLoading, setSubLoading] = useState(false);
@@ -193,6 +196,9 @@ export default function PageDetail() {
       if (!res.ok) throw new Error("Failed");
       const data = await res.json();
       setPage({ ...page, status: data.page.status });
+      if (publish) {
+        completeStep("publish_share");
+      }
       toast({ title: publish ? "Page published" : "Page unpublished" });
     } catch {
       toast({ title: "Failed to update", variant: "destructive" });

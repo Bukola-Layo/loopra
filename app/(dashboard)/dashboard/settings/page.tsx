@@ -10,7 +10,9 @@ import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useSession } from "next-auth/react";
 import { toast } from "@/hooks/use-toast";
-import { Camera, Upload } from "lucide-react";
+import { Camera, CreditCard, Upload, ArrowUpRight } from "lucide-react";
+import Link from "next/link";
+import { UsageMeter } from "@/components/billing/usage-meter";
 
 export default function SettingsPage() {
   const { data: session, update: updateSession } = useSession();
@@ -21,6 +23,13 @@ export default function SettingsPage() {
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [savingImage, setSavingImage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [subscription, setSubscription] = useState<{
+    plan: { name: string; slug: string; price: number; currency: string; billingCycle: string; limits?: { subscribers: number; campaignsPerMonth: number; aiGenerations: number } };
+    status: string;
+    currentPeriodEnd: string | null;
+  } | null>(null);
+  const [usage, setUsage] = useState({ subscribers: 0, campaignsPerMonth: 0, aiGenerations: 0 });
+  const [billingLoading, setBillingLoading] = useState(true);
 
   function handleImageSelect(file: File) {
     if (!file.type.startsWith("image/")) return;
@@ -53,16 +62,34 @@ export default function SettingsPage() {
   }
 
   useEffect(() => {
-    fetch("/api/workspaces")
-      .then((r) => r.json())
-      .then((res) => {
-        const ws = res.workspaces?.[0];
+    Promise.all([
+      fetch("/api/workspaces").then((r) => r.json()),
+      fetch("/api/billing/subscription").then((r) => r.json()),
+    ])
+      .then(([wsRes, subRes]) => {
+        const ws = wsRes.workspaces?.[0];
         if (ws) {
           setWorkspaceId(ws.id);
           setWorkspaceName(ws.name);
         }
+        if (subRes.subscription) {
+          setSubscription({
+            plan: subRes.subscription.plan,
+            status: subRes.subscription.status,
+            currentPeriodEnd: subRes.subscription.currentPeriodEnd,
+          });
+          const u = subRes.subscription.usage ?? {};
+          setUsage({
+            subscribers: u.subscribers ?? 0,
+            campaignsPerMonth: u.campaignsPerMonth ?? 0,
+            aiGenerations: u.aiGenerations ?? 0,
+          });
+        }
       })
-      .finally(() => setLoading(false));
+      .finally(() => {
+        setLoading(false);
+        setBillingLoading(false);
+      });
   }, []);
 
   const saveWorkspace = async () => {
@@ -189,19 +216,78 @@ export default function SettingsPage() {
       </Card>
 
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Billing</CardTitle>
+          <Link href="/dashboard/settings/billing">
+            <Button variant="outline" size="sm" className="gap-1.5">
+              <CreditCard className="h-3.5 w-3.5" />
+              Manage
+            </Button>
+          </Link>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-medium">Free Plan</p>
-              <p className="text-sm text-muted-foreground">
-                0 of 1,000 subscribers used
-              </p>
+          {billingLoading ? (
+            <div className="space-y-3">
+              <Skeleton className="h-5 w-40" />
+              <Skeleton className="h-4 w-60" />
+              <Skeleton className="h-3 w-full" />
+              <Skeleton className="h-3 w-full" />
+              <Skeleton className="h-3 w-full" />
             </div>
-            <Button variant="outline">Upgrade</Button>
-          </div>
+          ) : subscription ? (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <span className="text-lg font-semibold">{subscription.plan.name}</span>
+                <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary capitalize">
+                  {subscription.status}
+                </span>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                ${Number(subscription.plan.price)}/{subscription.plan.billingCycle}
+                {subscription.currentPeriodEnd && (
+                  <span className="ml-2">
+                    &middot; Renews{" "}
+                    {new Date(subscription.currentPeriodEnd).toLocaleDateString()}
+                  </span>
+                )}
+              </p>
+              <div className="space-y-2.5 pt-1">
+                <UsageMeter
+                  label="Subscribers"
+                  current={usage.subscribers}
+                  limit={subscription.plan.limits?.subscribers ?? 500}
+                />
+                <UsageMeter
+                  label="Campaigns this month"
+                  current={usage.campaignsPerMonth}
+                  limit={subscription.plan.limits?.campaignsPerMonth ?? 5}
+                />
+                <UsageMeter
+                  label="AI Generations"
+                  current={usage.aiGenerations}
+                  limit={subscription.plan.limits?.aiGenerations ?? 0}
+                />
+              </div>
+              <Link href="/dashboard/settings/billing">
+                <Button variant="outline" size="sm" className="gap-1.5">
+                  Upgrade plan
+                  <ArrowUpRight className="h-3.5 w-3.5" />
+                </Button>
+              </Link>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                No active subscription. Choose a plan to get started.
+              </p>
+              <Link href="/dashboard/settings/billing">
+                <Button size="sm" className="gap-1.5">
+                  <CreditCard className="h-3.5 w-3.5" />
+                  View plans
+                </Button>
+              </Link>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

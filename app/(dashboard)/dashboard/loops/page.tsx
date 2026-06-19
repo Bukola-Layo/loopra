@@ -7,6 +7,8 @@ import { StatusBadge } from "@/components/shared/status-badge";
 import { EmptyState } from "@/components/shared/empty-state";
 import { GitFork, Plus } from "lucide-react";
 import Link from "next/link";
+import { FeatureDiscovery } from "@/components/onboarding/feature-discovery";
+import { useOnboardingStore } from "@/store/use-onboarding-store";
 
 type Loop = {
   id: string;
@@ -22,12 +24,21 @@ export default function LoopsPage() {
   const [loops, setLoops] = useState<Loop[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const { showOverlay, isStepCompleted, isOverlayDismissed, completeStep } =
+    useOnboardingStore();
+
   useEffect(() => {
     fetch("/api/loops")
       .then((r) => r.json())
       .then((res) => setLoops(res.loops ?? []))
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    if (!loading && loops.length === 0 && !isStepCompleted("build_loop") && !isOverlayDismissed("build_loop")) {
+      showOverlay("build_loop");
+    }
+  }, [loading, loops.length]);
 
   return (
     <div className="space-y-6">
@@ -38,13 +49,18 @@ export default function LoopsPage() {
             Build automation workflows triggered by subscriber actions.
           </p>
         </div>
-        <Link href="/dashboard/loops/new">
+        <Link href="/dashboard/loops/new" onClick={() => {
+          completeStep("build_loop");
+          showOverlay("publish_share");
+        }}>
           <Button className="gap-2">
             <Plus className="h-4 w-4" />
             Create loop
           </Button>
         </Link>
       </div>
+
+      <FeatureDiscovery featureId="loops" />
 
       {loading ? (
         <div className="space-y-3">

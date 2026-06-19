@@ -107,7 +107,7 @@ export function Sidebar() {
           className={cn(
             "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
             pathname === "/dashboard"
-              ? "bg-primary/10 text-primary"
+              ? "bg-sidebar-selected text-primary"
               : "text-sidebar-foreground hover:bg-sidebar-muted",
             collapsed && "justify-center px-2"
           )}
@@ -130,7 +130,7 @@ export function Sidebar() {
               className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                 isActive
-                  ? "bg-primary/10 text-primary"
+                  ? "bg-sidebar-selected text-primary"
                   : "text-sidebar-foreground hover:bg-sidebar-muted",
                 collapsed && "justify-center px-2"
               )}
@@ -146,7 +146,7 @@ export function Sidebar() {
           className={cn(
             "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
             pathname.startsWith("/dashboard/settings")
-              ? "bg-primary/10 text-primary"
+              ? "bg-sidebar-selected text-primary"
               : "text-sidebar-foreground hover:bg-sidebar-muted",
             collapsed && "justify-center px-2"
           )}
@@ -208,7 +208,7 @@ function NavGroupSection({
                 className={cn(
                   "flex items-center gap-3 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
                   isChildActive
-                    ? "bg-primary/10 text-primary"
+                    ? "bg-sidebar-selected text-primary"
                     : "text-sidebar-foreground hover:bg-sidebar-muted"
                 )}
               >

@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/shared/empty-state";
+import { FeatureDiscovery } from "@/components/onboarding/feature-discovery";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -123,6 +124,8 @@ export default function FormsPage() {
           </Button>
         </Link>
       </div>
+
+      <FeatureDiscovery featureId="forms" />
 
       {forms.length === 0 ? (
         <EmptyState

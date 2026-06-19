@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { getWorkspaceId } from "@/lib/auth";
 import { apiSuccess, apiError, handleApiError } from "@/types/api";
 import { sendCampaign } from "@/lib/email";
+import { createNotification } from "@/lib/notification";
 
 const sendCampaignSchema = z.object({
   segmentIds: z.array(z.string()).optional(),
@@ -39,6 +40,14 @@ export async function POST(
       const { sent, failed } = await sendCampaign(params.id, workspaceId, {
         segmentIds: result.data.segmentIds,
         subscriberIds: result.data.subscriberIds,
+      });
+
+      await createNotification({
+        workspaceId,
+        type: "campaign_sent",
+        title: "Campaign sent",
+        description: `"${campaign.title}" was sent to ${sent} subscriber${sent !== 1 ? "s" : ""}`,
+        link: `/dashboard/campaigns`,
       });
 
       return apiSuccess({

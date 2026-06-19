@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Users, Mail, GitFork, BarChart3, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { OnboardingProgress } from "@/components/onboarding/progress-bar";
 
 type DashboardData = {
   metrics: {
@@ -46,6 +47,8 @@ export default function DashboardPage() {
           Here&apos;s an overview of your audience and campaigns.
         </p>
       </div>
+
+      <OnboardingProgress />
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>

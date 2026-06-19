@@ -15,6 +15,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { EmptyState } from "@/components/shared/empty-state";
+import { FeatureDiscovery } from "@/components/onboarding/feature-discovery";
+import { useOnboardingStore } from "@/store/use-onboarding-store";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -73,9 +75,18 @@ export default function PagesPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [sort, setSort] = useState("newest");
 
+  const { showOverlay, isStepCompleted, isOverlayDismissed, completeStep } =
+    useOnboardingStore();
+
   useEffect(() => {
     fetchPages();
   }, [search, statusFilter, sort]);
+
+  useEffect(() => {
+    if (!loading && pages.length === 0 && !isStepCompleted("create_page") && !isOverlayDismissed("create_page")) {
+      showOverlay("create_page");
+    }
+  }, [loading, pages.length]);
 
   async function fetchPages() {
     setLoading(true);
@@ -154,6 +165,8 @@ export default function PagesPage() {
           </Button>
         </Link>
       </div>
+
+      <FeatureDiscovery featureId="pages" />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>

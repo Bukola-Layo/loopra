@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { getWorkspaceId } from "@/lib/auth";
 import { apiSuccess, apiError, handleApiError } from "@/types/api";
+import { createNotification } from "@/lib/notification";
 
 export async function POST(
   req: NextRequest,
@@ -24,6 +25,16 @@ export async function POST(
       where: { id },
       data: { status: publish ? "published" : "draft" },
     });
+
+    if (publish) {
+      await createNotification({
+        workspaceId,
+        type: "page_published",
+        title: "Page published",
+        description: `"${updated.name}" is now live`,
+        link: `/dashboard/audience/pages/${id}`,
+      });
+    }
 
     return apiSuccess({ page: updated });
   } catch (error) {

@@ -11,6 +11,8 @@ import { Mail, Plus, Search, Calendar, Users, Trash2, XCircle, Loader2, LayoutTe
 import Link from "next/link";
 import { anyToHtml } from "@/lib/email-builder";
 import { toast } from "@/hooks/use-toast";
+import { FeatureDiscovery } from "@/components/onboarding/feature-discovery";
+import { useOnboardingStore } from "@/store/use-onboarding-store";
 
 type Campaign = {
   id: string;
@@ -66,12 +68,21 @@ export default function CampaignsPage() {
   const [creating, setCreating] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
+  const { showOverlay, isStepCompleted, isOverlayDismissed, completeStep } =
+    useOnboardingStore();
+
   useEffect(() => {
     fetch("/api/campaigns")
       .then((r) => r.json())
       .then((res) => setCampaigns(res.campaigns ?? []))
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    if (!loading && campaigns.length === 0 && !isStepCompleted("create_campaign") && !isOverlayDismissed("create_campaign")) {
+      showOverlay("create_campaign");
+    }
+  }, [loading, campaigns.length]);
 
   const filteredCampaigns = campaigns.filter(
     (c) =>
@@ -92,6 +103,8 @@ export default function CampaignsPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Failed to create");
+      completeStep("create_campaign");
+      showOverlay("build_loop");
       router.push(`/dashboard/campaigns/${data.campaign.id}/edit`);
     } catch (err) {
       toast({
@@ -159,6 +172,8 @@ export default function CampaignsPage() {
           </Button>
         </div>
       </div>
+
+      <FeatureDiscovery featureId="campaigns" />
 
       {!loading && campaigns.length > 0 && (
         <div className="flex items-center gap-4">

@@ -1,6 +1,7 @@
 import { db } from "./db";
 import { transporter, fromEmail } from "./mail";
 import type { Prisma } from "@prisma/client";
+import { createNotification } from "./notification";
 
 type LoopWithRelations = Awaited<ReturnType<typeof getLoopWithRelations>>;
 
@@ -114,6 +115,14 @@ export async function startExecution(
       status: "running",
       startedAt: new Date(),
     },
+  });
+
+  await createNotification({
+    workspaceId,
+    type: "loop_triggered",
+    title: "Loop triggered",
+    description: `"${loop.name}" started for a subscriber`,
+    link: `/dashboard/loops/${loopId}`,
   });
 
   process.nextTick(() => {

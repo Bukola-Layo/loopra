@@ -12,32 +12,92 @@ export async function POST(req: NextRequest) {
     }
 
     const data = JSON.parse(payload);
-
     const { event, data: eventData } = data;
 
     if (event === "charge.completed" && eventData.status === "successful") {
-      const { tx_ref, amount, currency, customer } = eventData;
+      const { tx_ref, amount, currency, customer, meta } = eventData;
 
-      const subscription = await db.subscription.findFirst({
+      const existingPayment = await db.payment.findUnique({
+        where: { flutterwaveReference: tx_ref },
+      });
+      if (existingPayment) {
+        return NextResponse.json({ received: true });
+      }
+
+      const planId = meta?.planId;
+      if (!planId) {
+        return NextResponse.json({ received: true });
+      }
+
+      const plan = await db.subscriptionPlan.findUnique({
+        where: { id: planId as string },
+      });
+      if (!plan) {
+        return NextResponse.json({ received: true });
+      }
+
+      const workspace = await db.workspace.findFirst({
         where: {
-          payments: {
+          members: {
             some: {
-              flutterwaveReference: tx_ref,
+              user: { email: customer.email },
             },
           },
         },
       });
+      if (!workspace) {
+        return NextResponse.json({ received: true });
+      }
 
-      if (subscription) {
-        await db.payment.create({
-          data: {
-            subscriptionId: subscription.id,
-            amount: parseFloat(amount),
-            currency: currency ?? "USD",
-            status: "success",
-            flutterwaveReference: tx_ref,
-          },
+      const existingSubscription = await db.subscription.findFirst({
+        where: { workspaceId: workspace.id, status: "active" },
+      });
+
+      let subscriptionId: string;
+      if (existingSubscription) {
+        await db.subscription.update({
+          where: { id: existingSubscription.id },
+          data: { status: "cancelled", cancelledAt: new Date() },
         });
+      }
+
+      const subscription = await db.subscription.create({
+        data: {
+          workspaceId: workspace.id,
+          planId: plan.id,
+          status: "active",
+          currentPeriodStart: new Date(),
+          currentPeriodEnd: new Date(
+            new Date().setMonth(new Date().getMonth() + 1)
+          ),
+        },
+      });
+      subscriptionId = subscription.id;
+
+      await db.payment.create({
+        data: {
+          subscriptionId,
+          amount: parseFloat(amount),
+          currency: currency ?? "USD",
+          status: "success",
+          flutterwaveReference: tx_ref,
+        },
+      });
+    }
+
+    if (event === "subscription.cancelled") {
+      const { tx_ref } = eventData;
+      if (tx_ref) {
+        const payment = await db.payment.findUnique({
+          where: { flutterwaveReference: tx_ref },
+          include: { subscription: true },
+        });
+        if (payment) {
+          await db.subscription.update({
+            where: { id: payment.subscriptionId },
+            data: { status: "cancelled", cancelledAt: new Date() },
+          });
+        }
       }
     }
 
