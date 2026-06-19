@@ -28,9 +28,9 @@ export function PlanCard({ plan, currentPlanSlug, onSelect, loading }: Props) {
   return (
     <div
       className={cn(
-        "relative rounded-xl border p-6 transition-all",
+        "relative rounded-xl border p-6 transition-all bg-white",
         isCurrent
-          ? "border-primary ring-1 ring-primary bg-primary/5"
+          ? "border-primary ring-1 ring-primary"
           : "hover:border-primary/50"
       )}
     >

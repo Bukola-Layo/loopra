@@ -2,9 +2,14 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import { Sidebar } from "@/components/loops/builder/sidebar";
-import { FlowBuilder } from "@/components/loops/builder/flow-builder";
 import { useFlowStore } from "@/store/use-flow-store";
+
+const FlowBuilder = dynamic(
+  () => import("@/components/loops/builder/flow-builder").then((m) => m.FlowBuilder),
+  { ssr: false }
+);
 import { ArrowLeft, Save, Loader2, Play, Square, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";

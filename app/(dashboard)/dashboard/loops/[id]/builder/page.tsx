@@ -1,12 +1,17 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { Sidebar } from '@/components/loops/builder/sidebar';
-import { FlowBuilder } from '@/components/loops/builder/flow-builder';
 import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { useFlowStore } from '@/store/use-flow-store';
 import { useState } from 'react';
+
+const FlowBuilder = dynamic(
+  () => import('@/components/loops/builder/flow-builder').then((m) => m.FlowBuilder),
+  { ssr: false }
+);
 
 export default function LoopBuilderPage({ params }: { params: { id: string } }) {
   const nodes = useFlowStore((state) => state.nodes);

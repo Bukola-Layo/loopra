@@ -1,10 +1,16 @@
 import { NextRequest } from "next/server";
 import { db } from "@/lib/db";
+import { verifyUnsubscribe } from "@/lib/email";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
-  const campaignId = searchParams.get("cid");
-  const subscriberId = searchParams.get("sid");
+  const campaignId = searchParams.get("cid") ?? "";
+  const subscriberId = searchParams.get("sid") ?? "";
+  const signature = searchParams.get("sig") ?? "";
+
+  if (!verifyUnsubscribe(campaignId, subscriberId, signature)) {
+    return new Response("Invalid unsubscribe link", { status: 400 });
+  }
 
   if (subscriberId) {
     try {

@@ -88,7 +88,7 @@ export default function LoopsPage() {
             >
               <img
                 className="w-full h-32 object-cover border-b"
-                src="/images/illustrations/loop.png.png"
+                src="/images/illustrations/loop.png"
                 alt=""
               />
               <div className="p-5">

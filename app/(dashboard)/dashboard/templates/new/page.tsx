@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,12 +10,21 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
 import { ArrowLeft, Sparkles, Eye } from "lucide-react";
 import Link from "next/link";
-import { BlockEditor, EmailPreview, type Viewport } from "@/components/templates/block-editor";
 import {
   type EmailBlock,
   serializeBlocks,
   BUILT_IN_TEMPLATES,
 } from "@/lib/email-builder";
+import type { Viewport } from "@/components/templates/block-editor";
+
+const BlockEditor = dynamic(
+  () => import("@/components/templates/block-editor").then((m) => m.BlockEditor),
+  { ssr: false }
+);
+const EmailPreview = dynamic(
+  () => import("@/components/templates/block-editor").then((m) => m.EmailPreview),
+  { ssr: false }
+);
 
 export default function NewTemplatePage() {
   const router = useRouter();

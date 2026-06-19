@@ -6,9 +6,26 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PlanCard } from "@/components/billing/plan-card";
 import { UsageMeter } from "@/components/billing/usage-meter";
-import { ArrowLeft, CreditCard, Download, Loader2 } from "lucide-react";
+import { ArrowLeft, CreditCard, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "@/hooks/use-toast";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
+
+type Invoice = {
+  id: string;
+  date: string;
+  amount: number;
+  currency: string;
+  status: string;
+  planName: string;
+  reference: string | null;
+};
 
 type Plan = {
   id: string;
@@ -20,15 +37,6 @@ type Plan = {
   features: string[];
 };
 
-type Invoice = {
-  id: string;
-  date: string;
-  amount: number;
-  currency: string;
-  status: string;
-  planName: string;
-  reference: string | null;
-};
 
 export default function BillingPage() {
   const [plans, setPlans] = useState<Plan[]>([]);
@@ -42,7 +50,9 @@ export default function BillingPage() {
     campaignsPerMonth: 0,
     aiGenerations: 0,
   });
+
   const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [showHistory, setShowHistory] = useState(false);
   const [loading, setLoading] = useState(true);
   const [upgrading, setUpgrading] = useState<string | null>(null);
   const [cancelling, setCancelling] = useState(false);
@@ -133,18 +143,24 @@ export default function BillingPage() {
 
   return (
     <div className="max-w-5xl space-y-8">
-      <div className="flex items-center gap-4">
-        <Link href="/dashboard/settings">
-          <Button variant="ghost" size="icon" className="h-8 w-8">
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-        </Link>
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Billing</h1>
-          <p className="text-sm text-muted-foreground">
-            Manage your subscription and payment history
-          </p>
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <Link href="/dashboard/settings">
+            <Button variant="ghost" size="icon" className="h-8 w-8">
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          </Link>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">Billing</h1>
+            <p className="text-sm text-muted-foreground">
+              Manage your subscription and payment history
+            </p>
+          </div>
         </div>
+        <Button variant="outline" size="sm" onClick={() => setShowHistory(true)}>
+          <CreditCard className="h-4 w-4 mr-2" />
+          View Payment History
+        </Button>
       </div>
 
       {loading ? (
@@ -235,66 +251,61 @@ export default function BillingPage() {
             </div>
           </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <CreditCard className="h-5 w-5" />
-                Payment History
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {invoices.length === 0 ? (
-                <p className="text-sm text-muted-foreground py-4 text-center">
-                  No payments yet
-                </p>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b text-left text-muted-foreground">
-                        <th className="pb-3 font-medium">Date</th>
-                        <th className="pb-3 font-medium">Plan</th>
-                        <th className="pb-3 font-medium">Amount</th>
-                        <th className="pb-3 font-medium">Status</th>
-                        <th className="pb-3 font-medium">Reference</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {invoices.map((inv) => (
-                        <tr key={inv.id} className="border-b last:border-0">
-                          <td className="py-3">
-                            {new Date(inv.date).toLocaleDateString()}
-                          </td>
-                          <td className="py-3">{inv.planName}</td>
-                          <td className="py-3 font-medium">
-                            {inv.currency} {inv.amount.toFixed(2)}
-                          </td>
-                          <td className="py-3">
-                            <span
-                              className={`rounded-full px-2 py-0.5 text-xs font-medium capitalize ${
-                                inv.status === "success"
-                                  ? "bg-green-100 text-green-700"
-                                  : inv.status === "failed"
-                                  ? "bg-red-100 text-red-700"
-                                  : "bg-yellow-100 text-yellow-700"
-                              }`}
-                            >
-                              {inv.status}
-                            </span>
-                          </td>
-                          <td className="py-3 text-xs text-muted-foreground font-mono">
-                            {inv.reference?.slice(0, 16)}...
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+
         </>
+
       )}
+
+      <Sheet open={showHistory} onOpenChange={setShowHistory}>
+        <SheetContent className="overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>Payment History</SheetTitle>
+            <SheetDescription>Your past payments and invoices</SheetDescription>
+          </SheetHeader>
+          <div className="mt-6 space-y-3">
+            {invoices.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-8 text-center">
+                No payments yet
+              </p>
+            ) : (
+              invoices.map((inv) => (
+                <div
+                  key={inv.id}
+                  className="rounded-lg border p-4 space-y-2"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">{inv.planName}</span>
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-xs font-medium capitalize ${
+                        inv.status === "success"
+                          ? "bg-green-100 text-green-700"
+                          : inv.status === "failed"
+                          ? "bg-red-100 text-red-700"
+                          : "bg-yellow-100 text-yellow-700"
+                      }`}
+                    >
+                      {inv.status}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm text-muted-foreground">
+                    <span>
+                      {new Date(inv.date).toLocaleDateString()}
+                    </span>
+                    <span className="font-medium text-foreground">
+                      {inv.currency} {inv.amount.toFixed(2)}
+                    </span>
+                  </div>
+                  {inv.reference && (
+                    <p className="text-xs text-muted-foreground font-mono">
+                      Ref: {inv.reference}
+                    </p>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

@@ -1,7 +1,25 @@
+import { createHmac } from "crypto";
 import { transporter, fromEmail } from "./mail";
 import { db } from "./db";
 import { marked } from "marked";
 import { deserializeBlocks, blocksToRows } from "./email-builder";
+
+function signUnsubscribe(campaignId: string, subscriberId: string): string {
+  const secret = process.env.NEXTAUTH_SECRET ?? "";
+  const data = `${campaignId}:${subscriberId}`;
+  return createHmac("sha256", secret).update(data).digest("hex");
+}
+
+export function verifyUnsubscribe(
+  campaignId: string,
+  subscriberId: string,
+  signature: string
+): boolean {
+  const secret = process.env.NEXTAUTH_SECRET ?? "";
+  if (!secret) return false;
+  const expected = signUnsubscribe(campaignId, subscriberId);
+  return expected === signature;
+}
 
 const TRACKING_PIXEL_BASE64 =
   "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
@@ -61,7 +79,7 @@ export async function renderEmailHtml(
           <tr>
             <td style="padding:16px 32px;background-color:#fafafa;border-top:1px solid #e4e4e7;">
               <p style="margin:0;font-size:12px;color:#a1a1aa;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
-                <a href="${baseUrl}/api/track/unsubscribe?cid=${campaignId}&sid=${subscriberId}" style="color:#a1a1aa;text-decoration:underline;">Unsubscribe</a>
+                <a href="${baseUrl}/api/track/unsubscribe?cid=${campaignId}&sid=${subscriberId}&sig=${signUnsubscribe(campaignId, subscriberId)}" style="color:#a1a1aa;text-decoration:underline;">Unsubscribe</a>
               </p>
             </td>
           </tr>

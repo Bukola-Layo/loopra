@@ -2,8 +2,26 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { VisualEditor } from "@/components/email-editor/visual-editor";
-import { type EmailBlock, deserializeBlocks, serializeBlocks, createBlock } from "@/lib/email-builder";
+import dynamic from "next/dynamic";
+import type { EmailBlock } from "@/lib/email-builder";
+
+type VisualEditorProps = {
+  initialBlocks: EmailBlock[];
+  documentName: string;
+  onSave: (blocks: EmailBlock[]) => void;
+  backHref: string;
+  saveLabel?: string;
+  saving?: boolean;
+  onSendTest?: () => void;
+  onDuplicate?: () => void;
+  onUseInCampaign?: () => void;
+};
+
+const VisualEditor = dynamic<VisualEditorProps>(
+  () => import("@/components/email-editor/visual-editor").then((m) => m.VisualEditor),
+  { ssr: false }
+);
+import { deserializeBlocks, serializeBlocks, createBlock } from "@/lib/email-builder";
 import { toast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 

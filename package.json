@@ -13,7 +13,9 @@
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
     "db:studio": "prisma studio",
-    "db:seed": "tsx prisma/seed.ts"
+    "db:seed": "tsx prisma/seed.ts",
+    "load-test": "node scripts/load-test.mjs",
+    "analyze": "ANALYZE=true next build"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
@@ -37,7 +39,7 @@
     "@radix-ui/react-tabs": "^1.1.1",
     "@radix-ui/react-toast": "^1.2.2",
     "@radix-ui/react-tooltip": "^1.1.3",
-    "@tanstack/react-query": "^5.59.0",
+
     "@xyflow/react": "^12.0.0",
     "bcryptjs": "^2.4.3",
     "class-variance-authority": "^0.7.1",
