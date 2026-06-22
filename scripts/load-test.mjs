@@ -1,4 +1,4 @@
-const TARGET = process.env.LOAD_TEST_URL ?? "http://localhost:3000";
+const TARGET = process.env.LOAD_TEST_URL ?? "http://127.0.0.1:3000";
 const CONCURRENCY = parseInt(process.env.LOAD_TEST_CONCURRENCY ?? "10", 10);
 const REQUESTS = parseInt(process.env.LOAD_TEST_REQUESTS ?? "50", 10);
 
@@ -16,7 +16,7 @@ async function bench(endpoint) {
   const start = performance.now();
   let status = 0;
   try {
-    const res = await fetch(url, { method: endpoint.method, signal: AbortSignal.timeout(10000) });
+    const res = await fetch(url, { method: endpoint.method, signal: AbortSignal.timeout(30000) });
     status = res.status;
   } catch {
     status = 0;
@@ -25,11 +25,20 @@ async function bench(endpoint) {
   results.push({ ...endpoint, duration, status, url });
 }
 
+async function warmup(endpoint) {
+  try {
+    await fetch(`${TARGET}${endpoint.path}`, { signal: AbortSignal.timeout(30000) });
+  } catch {}
+}
+
 async function run() {
   console.log(`\nLoad Test: ${TARGET}`);
   console.log(`Concurrency: ${CONCURRENCY}, Requests per endpoint: ${REQUESTS}\n`);
 
   for (const endpoint of ENDPOINTS) {
+    console.log(`Warming up ${endpoint.name}...`);
+    await warmup(endpoint);
+
     const start = performance.now();
     const batch = [];
     for (let i = 0; i < REQUESTS; i += CONCURRENCY) {

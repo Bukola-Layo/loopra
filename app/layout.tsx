@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import "../tokens/colors.css";
 import "../tokens/typography.css";
+import { Analytics } from "@vercel/analytics/react";
 import "./globals.css";
 
 const font = Plus_Jakarta_Sans({
@@ -25,7 +26,10 @@ type RootLayoutProps = {
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en" className={`${font.variable} scroll-smooth`}>
-      <body>{children}</body>
+      <body>
+        {children}
+        <Analytics />
+      </body>
     </html>
   );
 }

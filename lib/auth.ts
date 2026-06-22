@@ -49,7 +49,7 @@ export const authOptions: NextAuthOptions = {
           id: user.id,
           email: user.email,
           name: `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() || null,
-          image: user.image,
+          image: user.image?.startsWith("data:") ? `/api/user/avatar?id=${user.id}` : user.image,
           workspaceId: workspace?.id,
           role: workspace?.members[0]?.role ?? "owner",
         };
@@ -68,7 +68,9 @@ export const authOptions: NextAuthOptions = {
           where: { id: token.id as string },
           select: { image: true },
         });
-        if (dbUser) token.picture = dbUser.image;
+        if (dbUser && dbUser.image) {
+          token.picture = dbUser.image.startsWith("data:") ? `/api/user/avatar?id=${token.id}` : dbUser.image;
+        }
       }
       return token;
     },

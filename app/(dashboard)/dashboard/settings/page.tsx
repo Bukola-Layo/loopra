@@ -15,7 +15,7 @@ import Link from "next/link";
 import { UsageMeter } from "@/components/billing/usage-meter";
 
 export default function SettingsPage() {
-  const { data: session, update: updateSession } = useSession();
+  const { data: session, update } = useSession();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [workspaceName, setWorkspaceName] = useState("");
@@ -52,8 +52,8 @@ export default function SettingsPage() {
         body: JSON.stringify({ image: profileImage }),
       });
       if (!res.ok) throw new Error("Failed to save");
-      await updateSession();
       toast({ title: "Profile image updated" });
+      await update();
     } catch {
       toast({ title: "Failed to save image", variant: "destructive" });
     } finally {
