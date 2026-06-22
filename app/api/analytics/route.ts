@@ -1,9 +1,8 @@
-import { NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { getWorkspaceId } from "@/lib/auth";
 import { apiSuccess, handleApiError } from "@/types/api";
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     const workspaceId = await getWorkspaceId();
 

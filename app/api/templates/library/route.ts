@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import type { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { apiSuccess, handleApiError } from "@/types/api";
 
@@ -18,7 +19,7 @@ export async function GET(req: NextRequest) {
     if (search) where.name = { contains: search, mode: "insensitive" };
 
     const templates = await db.emailTemplate.findMany({
-      where: where as any,
+      where: where as Prisma.EmailTemplateWhereInput,
       orderBy: { createdAt: "desc" },
     });
 

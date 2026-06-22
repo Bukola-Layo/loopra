@@ -6,11 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useSession } from "next-auth/react";
 import { toast } from "@/hooks/use-toast";
-import { Camera, CreditCard, Upload, ArrowUpRight } from "lucide-react";
+import { Camera, CreditCard, ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 import { UsageMeter } from "@/components/billing/usage-meter";
 

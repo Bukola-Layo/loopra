@@ -21,7 +21,7 @@ const createFormSchema = z.object({
   settings: z.record(z.unknown()).optional(),
 });
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     const workspaceId = await getWorkspaceId();
     const forms = await db.form.findMany({

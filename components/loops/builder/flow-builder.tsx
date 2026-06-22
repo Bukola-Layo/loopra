@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useRef, useState, useEffect } from 'react';
+import { useCallback, useRef, useEffect } from 'react';
 import {
   ReactFlow,
   ReactFlowProvider,
@@ -9,7 +9,6 @@ import {
   Panel,
   useReactFlow,
   Node,
-  Edge,
   ConnectionMode,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';

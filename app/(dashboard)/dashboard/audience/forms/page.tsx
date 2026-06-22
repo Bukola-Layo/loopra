@@ -23,7 +23,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { FormInput, Plus, MoreHorizontal, Copy, Trash2, Eye, ExternalLink, FileText } from "lucide-react";
+import { FormInput, Plus, MoreHorizontal, Copy, Trash2, Eye } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 type Form = {

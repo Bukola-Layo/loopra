@@ -11,7 +11,7 @@ const createCampaignSchema = z.object({
   contentType: z.enum(["html", "markdown"]).optional(),
 });
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     const workspaceId = await getWorkspaceId();
     const campaigns = await db.campaign.findMany({

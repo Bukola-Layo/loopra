@@ -13,7 +13,7 @@ const FlowBuilder = dynamic(
   { ssr: false }
 );
 
-export default function LoopBuilderPage({ params }: { params: { id: string } }) {
+export default function LoopBuilderPage({ params: _params }: { params: { id: string } }) {
   const nodes = useFlowStore((state) => state.nodes);
   const edges = useFlowStore((state) => state.edges);
   const [isSaving, setIsSaving] = useState(false);

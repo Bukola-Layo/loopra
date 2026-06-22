@@ -39,7 +39,6 @@ export async function initiateCheckout(params: {
   planId: string;
   callbackUrl: string;
 }): Promise<string | null> {
-  const publicKey = process.env.NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY ?? "";
   const txRef = `loopra-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`;
 
   const response = await fetch(

@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tags, Plus, Users, Trash2, ChevronDown } from "lucide-react";
+import { Tags, Plus, Users, Trash2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 type Segment = {
@@ -75,7 +75,7 @@ export default function SegmentsPage() {
     try {
       const criteria = criteriaRows
         .filter((r) => r.value.trim())
-        .map(({ id: _, ...rest }) => rest);
+        .map(({ id: _id, ...rest }) => rest);
 
       const res = await fetch("/api/segments", {
         method: "POST",

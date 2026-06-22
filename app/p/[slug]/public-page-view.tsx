@@ -34,7 +34,6 @@ export function PublicPageView({
   subscriberCount,
   showSubscriberCount,
   settings,
-  workspaceName,
 }: Props) {
   const [email, setEmail] = useState("");
   const [firstName, setFirstName] = useState("");

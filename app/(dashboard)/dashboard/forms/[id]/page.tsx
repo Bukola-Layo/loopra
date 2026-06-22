@@ -203,7 +203,7 @@ export default function FormDetailPage() {
                 <DialogHeader>
                   <DialogTitle>Delete form</DialogTitle>
                   <DialogDescription>
-                    Are you sure you want to delete "{form.name}"? This action cannot be undone. All fields and submissions will be permanently removed.
+                    Are you sure you want to delete &quot;{form.name}&quot;? This action cannot be undone. All fields and submissions will be permanently removed.
                   </DialogDescription>
                 </DialogHeader>
                 <DialogFooter>

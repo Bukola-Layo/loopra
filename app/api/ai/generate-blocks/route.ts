@@ -2,9 +2,7 @@ import { NextRequest } from "next/server";
 import { z } from "zod";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { getWorkspaceId } from "@/lib/auth";
 import { apiSuccess, apiError, handleApiError } from "@/types/api";
-import { db } from "@/lib/db";
 
 const generateBlocksSchema = z.object({
   prompt: z.string().min(1).max(2000),

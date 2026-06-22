@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { TrendingUp, Users, Mail, FormInput } from "lucide-react";
+import { TrendingUp } from "lucide-react";
 
 type AnalyticsData = {
   metrics: {

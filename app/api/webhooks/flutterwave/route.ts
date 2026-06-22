@@ -53,7 +53,6 @@ export async function POST(req: NextRequest) {
         where: { workspaceId: workspace.id, status: "active" },
       });
 
-      let subscriptionId: string;
       if (existingSubscription) {
         await db.subscription.update({
           where: { id: existingSubscription.id },
@@ -72,7 +71,7 @@ export async function POST(req: NextRequest) {
           ),
         },
       });
-      subscriptionId = subscription.id;
+      const subscriptionId = subscription.id;
 
       await db.payment.create({
         data: {

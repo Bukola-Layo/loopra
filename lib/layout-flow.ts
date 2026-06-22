@@ -1,4 +1,4 @@
-import { Edge, Node } from '@xyflow/react';
+import { Edge, Node, Position } from '@xyflow/react';
 import dagre from 'dagre';
 
 const nodeWidth = 280;
@@ -24,8 +24,8 @@ export const getLayoutedElements = (nodes: Node[], edges: Edge[], direction = 'T
     const nodeWithPosition = dagreGraph.node(node.id);
     const newNode = {
       ...node,
-      targetPosition: 'top' as any,
-      sourcePosition: 'bottom' as any,
+      targetPosition: Position.Top,
+      sourcePosition: Position.Bottom,
       // We are shifting the dagre node position (anchor=center center) to the top left
       // so it matches the React Flow node anchor point (top left).
       position: {

@@ -1,10 +1,8 @@
 "use client";
 
 export default function AuthError({
-  error,
   reset,
 }: {
-  error: Error & { digest?: string };
   reset: () => void;
 }) {
   return (

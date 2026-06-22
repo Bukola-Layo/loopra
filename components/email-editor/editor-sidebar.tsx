@@ -152,8 +152,6 @@ function LayersTab() {
   const selectedBlockId = useEditorStore((s) => s.selectedBlockId);
   const selectBlock = useEditorStore((s) => s.selectBlock);
   const moveBlock = useEditorStore((s) => s.moveBlock);
-  const removeBlock = useEditorStore((s) => s.removeBlock);
-
   if (blocks.length === 0) {
     return (
       <div className="p-6 text-center text-sm text-muted-foreground">

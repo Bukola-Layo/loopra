@@ -12,9 +12,6 @@ import {
   Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import { useOnboardingStore } from "@/store/use-onboarding-store";
-
 type Notification = {
   id: string;
   type: string;

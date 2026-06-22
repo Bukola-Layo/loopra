@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
-import { getWorkspaceId, requireAuth } from "@/lib/auth";
+import { requireAuth } from "@/lib/auth";
 import { apiSuccess, apiError, handleApiError } from "@/types/api";
 
 const createWorkspaceSchema = z.object({

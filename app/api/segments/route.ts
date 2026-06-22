@@ -10,7 +10,7 @@ const createSegmentSchema = z.object({
   criteria: z.record(z.unknown()).optional(),
 });
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     const workspaceId = await getWorkspaceId();
     const segments = await db.segment.findMany({

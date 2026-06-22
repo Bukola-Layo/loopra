@@ -24,7 +24,6 @@ import {
 } from "@/components/ui/dialog";
 import {
   ArrowLeft,
-  ExternalLink,
   Copy,
   Eye,
   Trash2,
@@ -37,7 +36,6 @@ import {
   FileText,
   Plus,
   Settings,
-  Palette,
   Zap,
   Search,
   Mail,

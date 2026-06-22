@@ -21,9 +21,6 @@ export function verifyUnsubscribe(
   return expected === signature;
 }
 
-const TRACKING_PIXEL_BASE64 =
-  "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
-
 function wrapLinks(
   html: string,
   campaignId: string,

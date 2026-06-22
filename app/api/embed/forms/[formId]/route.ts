@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { z } from "zod";
 import type { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
-import { apiSuccess, apiError } from "@/types/api";
+import { apiError } from "@/types/api";
 
 const submitFormSchema = z.object({
   data: z.record(z.unknown()),

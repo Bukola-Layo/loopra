@@ -33,7 +33,7 @@ export function InsertEdge({
     targetPosition,
   });
 
-  const handleInsert = (type: string, title: string, iconType: string) => {
+  const handleInsert = (type: string, title: string) => {
     const newNode: Node = {
       id: `${type}-${Date.now()}`,
       type,
@@ -71,21 +71,21 @@ export function InsertEdge({
                   Add Step
                 </p>
                 <button
-                  onClick={() => handleInsert('action', 'Send Email', 'mail')}
+                  onClick={() => handleInsert('action', 'Send Email')}
                   className="flex items-center gap-3 rounded-md px-2 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 >
                   <Mail className="h-4 w-4 text-[#2cadc0]" />
                   Send Email
                 </button>
                 <button
-                  onClick={() => handleInsert('condition', 'Condition', 'branch')}
+                  onClick={() => handleInsert('condition', 'Condition')}
                   className="flex items-center gap-3 rounded-md px-2 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 >
                   <GitBranch className="h-4 w-4 text-purple-500" />
                   Condition
                 </button>
                 <button
-                  onClick={() => handleInsert('delay', 'Time Delay', 'clock')}
+                  onClick={() => handleInsert('delay', 'Time Delay')}
                   className="flex items-center gap-3 rounded-md px-2 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 >
                   <Clock className="h-4 w-4 text-amber-500" />

@@ -16,7 +16,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Users, Search, Upload, Download, ChevronRight, Plus, X, FileText, CheckCircle, AlertCircle, Mail, Calendar, Edit, Trash2 } from "lucide-react";
+import { Users, Search, Upload, Download, ChevronRight, Plus, X, CheckCircle, AlertCircle, Mail, Calendar, Edit, Trash2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useOnboardingStore } from "@/store/use-onboarding-store";
 import { parseCSV, previewCSV, mapCSVToSubscribers, type CSVPreview, type FieldMapping } from "@/lib/csv";
@@ -58,7 +58,7 @@ export default function AudiencePage() {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  const { showOverlay, isStepCompleted, isOverlayDismissed, completeStep } =
+  const { isStepCompleted, isOverlayDismissed, completeStep } =
     useOnboardingStore();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
@@ -75,7 +75,7 @@ export default function AudiencePage() {
 
   const [importOpen, setImportOpen] = useState(false);
   const [importStep, setImportStep] = useState<"upload" | "mapping" | "result">("upload");
-  const [csvText, setCsvText] = useState("");
+  const [, setCsvText] = useState("");
   const [csvPreview, setCsvPreview] = useState<CSVPreview | null>(null);
   const [csvFullRows, setCsvFullRows] = useState<string[][]>([]);
   const [mapping, setMapping] = useState<FieldMapping>({ email: "", firstName: "", lastName: "", source: "" });
@@ -94,7 +94,7 @@ export default function AudiencePage() {
   const [editTagInput, setEditTagInput] = useState("");
   const [editTags, setEditTags] = useState<string[]>([]);
   const [detailSaving, setDetailSaving] = useState(false);
-  const [detailError, setDetailError] = useState<string | null>(null);
+  const [, setDetailError] = useState<string | null>(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
   const fetchSubscribers = useCallback(async () => {

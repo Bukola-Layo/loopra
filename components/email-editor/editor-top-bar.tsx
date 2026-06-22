@@ -2,7 +2,7 @@
 
 import { ArrowLeft, Monitor, Smartphone, Send, Save, Loader2, Copy, PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useEditorStore, type Viewport } from "@/store/use-editor-store";
+import { useEditorStore } from "@/store/use-editor-store";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 

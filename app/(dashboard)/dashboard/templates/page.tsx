@@ -12,10 +12,7 @@ import {
   FileText,
   Plus,
   Search,
-  Sparkles,
-  Building2,
   User,
-  ArrowUpDown,
   Layers,
 } from "lucide-react";
 import Link from "next/link";

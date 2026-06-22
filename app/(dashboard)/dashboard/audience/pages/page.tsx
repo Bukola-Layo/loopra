@@ -46,7 +46,6 @@ import {
   Users,
   Globe,
   BarChart3,
-  ArrowUpRight,
   Calendar,
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
@@ -75,7 +74,7 @@ export default function PagesPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [sort, setSort] = useState("newest");
 
-  const { showOverlay, isStepCompleted, isOverlayDismissed, completeStep } =
+  const { showOverlay, isStepCompleted, isOverlayDismissed } =
     useOnboardingStore();
 
   useEffect(() => {

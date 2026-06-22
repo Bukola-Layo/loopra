@@ -35,6 +35,11 @@ type Plan = {
   currency: string;
   billingCycle: string;
   features: string[];
+  limits?: {
+    subscribers: number;
+    campaignsPerMonth: number;
+    aiGenerations: number;
+  };
 };
 
 
@@ -71,7 +76,6 @@ export default function BillingPage() {
             status: subRes.subscription.status,
             currentPeriodEnd: subRes.subscription.currentPeriodEnd,
           });
-          const limits = subRes.subscription.plan.limits ?? {};
           const usageData = subRes.subscription.usage ?? {};
           setUsage({
             subscribers: usageData.subscribers ?? 0,
@@ -133,11 +137,11 @@ export default function BillingPage() {
 
   const currentPlanLimits = subscription?.plan
     ? {
-        subscribers: (subscription.plan as any).limits?.subscribers ?? 500,
+        subscribers: subscription.plan.limits?.subscribers ?? 500,
         campaignsPerMonth:
-          (subscription.plan as any).limits?.campaignsPerMonth ?? 5,
+          subscription.plan.limits?.campaignsPerMonth ?? 5,
         aiGenerations:
-          (subscription.plan as any).limits?.aiGenerations ?? 0,
+          subscription.plan.limits?.aiGenerations ?? 0,
       }
     : { subscribers: 500, campaignsPerMonth: 5, aiGenerations: 0 };
 

@@ -26,7 +26,6 @@ import {
   FileText,
   Zap,
   Send,
-  Image,
   ChevronRight,
   Upload,
   X,

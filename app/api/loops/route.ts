@@ -21,7 +21,7 @@ const createLoopSchema = z.object({
   actions: z.array(actionSchema).min(1),
 });
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     const workspaceId = await getWorkspaceId();
     const loops = await db.loop.findMany({

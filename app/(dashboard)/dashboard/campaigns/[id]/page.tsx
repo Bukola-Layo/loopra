@@ -16,7 +16,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { ArrowLeft, Send, Clock, Copy, BarChart3, Edit3, Save, X, Eye, MousePointerClick, AlertTriangle, UserX, Mail, Sparkles, Trash2 } from "lucide-react";
+import { ArrowLeft, Send, Clock, Copy, BarChart3, Edit3, Save, Eye, MousePointerClick, AlertTriangle, UserX, Mail, Trash2 } from "lucide-react";
 import { AiPanel } from "@/components/ai/ai-panel";
 import { TemplatePreview } from "@/components/templates/template-preview";
 import { anyToHtml } from "@/lib/email-builder";

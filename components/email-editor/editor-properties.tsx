@@ -7,7 +7,6 @@ import { Trash2, Upload, MousePointer } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export function EditorProperties() {
@@ -103,13 +102,10 @@ function BlockSpecificProperties({
             <ImageUploadArea
               src={c.logoSrc}
               onFile={(f) => handleFile(f, "logoSrc")}
-              onClear={() => set("logoSrc", "")}
               dragOver={dragOver}
               setDragOver={setDragOver}
               fileInputRef={fileInputRef}
               accept="image/*"
-              setKey="logoSrc"
-              set={set}
             />
             {c.logoSrc && (
               <SliderField
@@ -177,13 +173,10 @@ function BlockSpecificProperties({
             <ImageUploadArea
               src={c.src !== "/placeholder.svg" ? c.src : undefined}
               onFile={(f) => handleFile(f)}
-              onClear={() => set("src", "/placeholder.svg")}
               dragOver={dragOver}
               setDragOver={setDragOver}
               fileInputRef={fileInputRef}
               accept="image/*"
-              setKey="src"
-              set={set}
             />
             {c.src && c.src !== "/placeholder.svg" && (
               <p className="text-xs text-muted-foreground truncate mt-1">
@@ -288,13 +281,10 @@ function BlockSpecificProperties({
             <ImageUploadArea
               src={c.src}
               onFile={(f) => handleFile(f)}
-              onClear={() => set("src", "")}
               dragOver={dragOver}
               setDragOver={setDragOver}
               fileInputRef={fileInputRef}
               accept="image/*"
-              setKey="src"
-              set={set}
             />
           </PropertySection>
           <PropertySection title="Settings">
@@ -586,23 +576,17 @@ function PaddingInput({
 function ImageUploadArea({
   src,
   onFile,
-  onClear,
   dragOver,
   setDragOver,
   fileInputRef,
   accept,
-  setKey,
-  set,
 }: {
   src?: string;
   onFile: (f: File) => void;
-  onClear: () => void;
   dragOver: boolean;
   setDragOver: (v: boolean) => void;
   fileInputRef: React.RefObject<HTMLInputElement>;
   accept: string;
-  setKey: string;
-  set: (key: string, value: string) => void;
 }) {
   return (
     <div

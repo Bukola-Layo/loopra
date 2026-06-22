@@ -51,7 +51,7 @@ export default function ForgotPasswordPage() {
               color: "var(--color-role-success)",
             }}
           >
-            If an account exists with that email, you'll receive a password
+            If an account exists with that email, you&apos;ll receive a password
             reset link shortly. The link will be valid for 1 hour.
           </div>
           <Link href="/login" className="block w-full">
