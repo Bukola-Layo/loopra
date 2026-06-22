@@ -101,11 +101,6 @@ export default function LandingPage() {
                 Get started free <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
-            <Link href="/features">
-              <Button variant="outline" size="lg">
-                See features
-              </Button>
-            </Link>
           </div>
         </div>
       </section>
