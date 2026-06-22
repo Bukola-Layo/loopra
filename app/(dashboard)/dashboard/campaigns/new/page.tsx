@@ -1,8 +1,6 @@
 "use client";
 
-export const dynamic = "force-dynamic";
-
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,6 +19,14 @@ type Template = {
 };
 
 export default function NewCampaignPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-muted-foreground">Loading...</div>}>
+      <NewCampaignForm />
+    </Suspense>
+  );
+}
+
+function NewCampaignForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [title, setTitle] = useState("");

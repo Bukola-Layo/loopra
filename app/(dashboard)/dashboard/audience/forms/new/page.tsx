@@ -1,8 +1,6 @@
 "use client";
 
-export const dynamic = "force-dynamic";
-
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -39,6 +37,14 @@ const FIELD_TYPES = [
 ];
 
 export default function NewForm() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-muted-foreground">Loading...</div>}>
+      <NewFormInner />
+    </Suspense>
+  );
+}
+
+function NewFormInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pageId = searchParams.get("pageId");
