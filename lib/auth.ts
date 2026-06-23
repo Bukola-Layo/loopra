@@ -19,40 +19,45 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          return null;
-        }
+        try {
+          if (!credentials?.email || !credentials?.password) {
+            return null;
+          }
 
-        const user = await db.user.findUnique({
-          where: { email: credentials.email },
-        });
+          const user = await db.user.findUnique({
+            where: { email: credentials.email },
+          });
 
-        if (!user || !user.password) {
-          return null;
-        }
+          if (!user || !user.password) {
+            return null;
+          }
 
-        const isValid = await compare(credentials.password, user.password);
-        if (!isValid) {
-          return null;
-        }
+          const isValid = await compare(credentials.password, user.password);
+          if (!isValid) {
+            return null;
+          }
 
-        const workspace = await db.workspace.findFirst({
-          where: { ownerId: user.id },
-          include: {
-            members: {
-              where: { userId: user.id },
+          const workspace = await db.workspace.findFirst({
+            where: { ownerId: user.id },
+            include: {
+              members: {
+                where: { userId: user.id },
+              },
             },
-          },
-        });
+          });
 
-        return {
-          id: user.id,
-          email: user.email,
-          name: `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() || null,
-          image: user.image?.startsWith("data:") ? `/api/user/avatar?id=${user.id}` : user.image,
-          workspaceId: workspace?.id,
-          role: workspace?.members[0]?.role ?? "owner",
-        };
+          return {
+            id: user.id,
+            email: user.email,
+            name: `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() || null,
+            image: user.image?.startsWith("data:") ? `/api/user/avatar?id=${user.id}` : user.image,
+            workspaceId: workspace?.id,
+            role: workspace?.members[0]?.role ?? "owner",
+          };
+        } catch (error) {
+          console.error("Authorize error:", error);
+          return null;
+        }
       },
     }),
   ],

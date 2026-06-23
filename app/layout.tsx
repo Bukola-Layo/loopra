@@ -17,6 +17,7 @@ export const metadata: Metadata = {
   },
   description:
     "Loopra is a modern communication automation platform for creators, startups, and small businesses.",
+  icons: { icon: "/favicon.svg" },
 };
 
 type RootLayoutProps = {

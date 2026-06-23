@@ -18,8 +18,10 @@ export async function POST(req: NextRequest) {
     const result = signupSchema.safeParse(body);
 
     if (!result.success) {
+      const errors = result.error.flatten().fieldErrors;
+      const firstError = Object.values(errors).flat()[0] ?? "Invalid input";
       return NextResponse.json(
-        { error: result.error.flatten().fieldErrors },
+        { error: firstError },
         { status: 422 }
       );
     }
