@@ -10,6 +10,7 @@ import {
   Share2,
   AlignEndHorizontal,
   GripVertical,
+  FileCode,
 } from "lucide-react";
 import { useDraggable } from "@dnd-kit/core";
 import { type BlockType, BLOCK_TYPE_LABELS } from "@/lib/email-builder";
@@ -27,6 +28,7 @@ const BLOCK_ICONS: Record<BlockType, ReactNode> = {
   social: <Share2 className="h-4 w-4" />,
   footer: <AlignEndHorizontal className="h-4 w-4" />,
   spacer: <Minus className="h-4 w-4 opacity-50" />,
+  raw: <FileCode className="h-4 w-4" />,
 };
 
 type DraggableBlockItemProps = {

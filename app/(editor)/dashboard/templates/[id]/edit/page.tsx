@@ -49,38 +49,78 @@ export default function EditTemplateRoute() {
   useEffect(() => {
     if (!params?.id) return;
 
-    fetch(`/api/templates/${params.id}`)
-      .then((r) => {
-        if (!r.ok) throw new Error("Not found");
-        return r.json();
-      })
-      .then((res) => {
-        const t = res.template;
-        if (t) {
-          setTemplate({ id: t.id, name: t.name, content: t.content });
-          const parsed = deserializeBlocks(t.content ?? "");
-          setBlocks(parsed ?? [createBlock("text")]);
-        }
-      })
-      .catch(() => {
-        fetch(`/api/templates/user/${params.id}`)
-          .then((r) => {
-            if (!r.ok) throw new Error("Not found");
-            return r.json();
-          })
-          .then((res) => {
-            const t = res.template;
-            if (t) {
-              setTemplate({ id: t.id, name: t.name, content: t.html });
-              const parsed = deserializeBlocks(t.html ?? "");
-              setBlocks(parsed ?? [createBlock("text")]);
-              setIsUserTemplate(true);
+    async function loadTemplate() {
+      const id = params.id as string;
+
+      // Try workspace template
+      try {
+        const r1 = await fetch(`/api/templates/${id}`);
+        if (r1.ok) {
+          const res = await r1.json();
+          const t = res.template;
+          if (t) {
+            setTemplate({ id: t.id, name: t.name, content: t.content });
+            const parsed = deserializeBlocks(t.content ?? "");
+            if (parsed) {
+              setBlocks(parsed);
+            } else if (t.content) {
+              setBlocks([{ ...createBlock("raw"), content: { html: t.content } }]);
+            } else {
+              setBlocks([createBlock("text")]);
             }
-          })
-          .catch(() => setTemplate(null))
-          .finally(() => setLoading(false));
-      })
-      .finally(() => setLoading(false));
+            return;
+          }
+        }
+      } catch { /* fall through */ }
+
+      // Try user template
+      try {
+        const r2 = await fetch(`/api/templates/user/${id}`);
+        if (r2.ok) {
+          const res = await r2.json();
+          const t = res.template;
+          if (t) {
+            setTemplate({ id: t.id, name: t.name, content: t.html });
+            const parsed = deserializeBlocks(t.html ?? "");
+            if (parsed) {
+              setBlocks(parsed);
+            } else if (t.html) {
+              setBlocks([{ ...createBlock("raw"), content: { html: t.html } }]);
+            } else {
+              setBlocks([createBlock("text")]);
+            }
+            setIsUserTemplate(true);
+            return;
+          }
+        }
+      } catch { /* fall through */ }
+
+      // Try library template
+      try {
+        const r3 = await fetch(`/api/templates/library/${id}`);
+        if (r3.ok) {
+          const res = await r3.json();
+          const t = res.template;
+          if (t) {
+            setTemplate({ id: t.id, name: t.name, content: t.html });
+            const parsed = deserializeBlocks(t.html ?? "");
+            if (parsed) {
+              setBlocks(parsed);
+            } else if (t.html) {
+              setBlocks([{ ...createBlock("raw"), content: { html: t.html } }]);
+            } else {
+              setBlocks([createBlock("text")]);
+            }
+            return;
+          }
+        }
+      } catch { /* fall through */ }
+
+      // Not found in any source
+      setTemplate(null);
+    }
+
+    loadTemplate().finally(() => setLoading(false));
   }, [params?.id]);
 
   async function handleDuplicate() {

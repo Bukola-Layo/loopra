@@ -20,7 +20,7 @@ import { EditorProperties } from "./editor-properties";
 import { useEditorStore } from "@/store/use-editor-store";
 import { type EmailBlock, type BlockType, BLOCK_TYPE_LABELS } from "@/lib/email-builder";
 import { useState } from "react";
-import { Puzzle, Image, Type, RectangleHorizontal, Minus, Link2, Share2, AlignEndHorizontal } from "lucide-react";
+import { Puzzle, Image, Type, RectangleHorizontal, Minus, Link2, Share2, AlignEndHorizontal, FileCode } from "lucide-react";
 import type { ReactNode } from "react";
 
 const BLOCK_ICONS: Record<BlockType, ReactNode> = {
@@ -34,6 +34,7 @@ const BLOCK_ICONS: Record<BlockType, ReactNode> = {
   social: <Share2 className="h-4 w-4" />,
   footer: <AlignEndHorizontal className="h-4 w-4" />,
   spacer: <Minus className="h-4 w-4 opacity-50" />,
+  raw: <FileCode className="h-4 w-4" />,
 };
 
 type VisualEditorProps = {

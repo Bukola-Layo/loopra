@@ -8,7 +8,8 @@ export type BlockType =
   | "spacer"
   | "logo"
   | "link"
-  | "social";
+  | "social"
+  | "raw";
 
 export type EmailBlock = {
   id: string;
@@ -39,6 +40,8 @@ export function createBlock(type: BlockType): EmailBlock {
       return { id, type, content: { text: "Click here", url: "https://example.com", fontSize: "14", color: "#6366f1", alignment: "center" } };
     case "social":
       return { id, type, content: { alignment: "center", facebook: "", twitter: "", instagram: "", linkedin: "", youtube: "" } };
+    case "raw":
+      return { id, type, content: { html: "" } };
   }
 }
 
@@ -148,6 +151,11 @@ function renderBlock(block: EmailBlock): string {
         ${links || '<span style="font-size:12px;color:#9ca3af;">Add social media links</span>'}
       </td></tr>`;
     }
+
+    case "raw":
+      return `<tr><td style="padding:0;">
+        ${c.html ?? ""}
+      </td></tr>`;
 
     default:
       return "";
@@ -276,4 +284,5 @@ export const BLOCK_TYPE_LABELS: Record<BlockType, string> = {
   logo: "Logo",
   link: "Link",
   social: "Social Media",
+  raw: "Raw HTML",
 };

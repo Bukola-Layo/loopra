@@ -287,6 +287,14 @@ function BlockPreview({ block }: { block: EmailBlock }) {
         </div>
       );
 
+    case "raw":
+      return (
+        <div
+          className="py-2 px-8 text-xs text-muted-foreground [&_style]:hidden"
+          dangerouslySetInnerHTML={{ __html: c.html ? c.html.slice(0, 500) : "Empty raw HTML block" }}
+        />
+      );
+
     default:
       return <div className="p-4 text-sm text-muted-foreground">Unknown block</div>;
   }
