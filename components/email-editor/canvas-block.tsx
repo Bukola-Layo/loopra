@@ -1,10 +1,11 @@
 "use client";
 
+import { useRef, useState, useEffect } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { cn } from "@/lib/utils";
 import { GripVertical, Trash2, ChevronUp, ChevronDown } from "lucide-react";
-import { type EmailBlock, BLOCK_TYPE_LABELS } from "@/lib/email-builder";
+import { type EmailBlock, BLOCK_TYPE_LABELS, anyToHtml } from "@/lib/email-builder";
 import { useEditorStore } from "@/store/use-editor-store";
 
 type CanvasBlockProps = {
@@ -112,6 +113,49 @@ export function CanvasBlock({ block, index, total }: CanvasBlockProps) {
       <div className="min-h-[32px]">
         <BlockPreview block={block} />
       </div>
+    </div>
+  );
+}
+
+/** Renders raw HTML content as a visual iframe preview inside the canvas */
+function RawBlockPreview({ html }: { html: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(0.5);
+
+  useEffect(() => {
+    if (ref.current) {
+      const w = ref.current.offsetWidth;
+      setScale(Math.min(1, w / 600));
+    }
+  }, []);
+
+  const previewHtml = anyToHtml(html);
+
+  if (!previewHtml) {
+    return (
+      <div className="py-8 px-8 text-center text-sm text-muted-foreground">
+        Empty raw HTML block
+      </div>
+    );
+  }
+
+  return (
+    <div
+      ref={ref}
+      className="w-full overflow-hidden relative"
+      style={{ height: Math.max(200, Math.round(400 * scale)) }}
+    >
+      <iframe
+        srcDoc={previewHtml}
+        className="absolute top-0 left-0 border-0 origin-top-left pointer-events-none"
+        style={{
+          width: "600px",
+          height: "800px",
+          transform: `scale(${scale})`,
+        }}
+        title="Raw HTML preview"
+        sandbox="allow-same-origin"
+      />
     </div>
   );
 }
@@ -288,12 +332,7 @@ function BlockPreview({ block }: { block: EmailBlock }) {
       );
 
     case "raw":
-      return (
-        <div
-          className="py-2 px-8 text-xs text-muted-foreground [&_style]:hidden"
-          dangerouslySetInnerHTML={{ __html: c.html ? c.html.slice(0, 500) : "Empty raw HTML block" }}
-        />
-      );
+      return <RawBlockPreview html={c.html ?? ""} />;
 
     default:
       return <div className="p-4 text-sm text-muted-foreground">Unknown block</div>;
