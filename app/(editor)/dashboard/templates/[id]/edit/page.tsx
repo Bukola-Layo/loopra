@@ -103,10 +103,31 @@ export default function EditTemplateRoute() {
           const t = res.template;
           if (t) {
             setTemplate({ id: t.id, name: t.name, content: t.html });
-            const parsed = deserializeBlocks(t.html ?? "");
-            if (parsed) {
-              setBlocks(parsed);
-            } else if (t.html) {
+
+            // Prefer cached blocks
+            if (t.blocks && Array.isArray(t.blocks)) {
+              setBlocks(t.blocks);
+              return;
+            }
+
+            // Convert HTML to blocks via AI
+            if (t.html) {
+              try {
+                const conv = await fetch("/api/templates/convert", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ html: t.html, templateId: t.id }),
+                });
+                if (conv.ok) {
+                  const convData = await conv.json();
+                  if (convData.blocks && Array.isArray(convData.blocks)) {
+                    setBlocks(convData.blocks);
+                    return;
+                  }
+                }
+              } catch { /* fall through to raw fallback */ }
+
+              // Fallback: wrap HTML in a raw block
               setBlocks([{ ...createBlock("raw"), content: { html: t.html } }]);
             } else {
               setBlocks([createBlock("text")]);

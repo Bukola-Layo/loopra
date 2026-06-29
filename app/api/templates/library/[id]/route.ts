@@ -9,9 +9,37 @@ export async function GET(
   try {
     const template = await db.emailTemplate.findUnique({
       where: { id: params.id },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        description: true,
+        category: true,
+        industry: true,
+        source: true,
+        html: true,
+        blocksJson: true,
+        thumbnail: true,
+        aiPrompt: true,
+        isPublished: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     });
 
-    return apiSuccess({ template: template ?? null });
+    let blocks: unknown = null;
+    if (template?.blocksJson) {
+      try {
+        const parsed = JSON.parse(template.blocksJson);
+        blocks = parsed.v === 1 ? parsed.blocks : parsed;
+      } catch {
+        blocks = null;
+      }
+    }
+
+    return apiSuccess({
+      template: template ? { ...template, blocks } : null,
+    });
   } catch (error) {
     return handleApiError(error);
   }

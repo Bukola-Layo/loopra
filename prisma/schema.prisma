@@ -522,6 +522,7 @@ model EmailTemplate {
   industry    String?
   source      TemplateSource @default(OFFICIAL)
   html        String?
+  blocksJson  String?        @map("blocks_json")
   thumbnail   String?
   aiPrompt    String?
   isPublished Boolean        @default(false)
