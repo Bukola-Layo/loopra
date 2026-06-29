@@ -14,6 +14,7 @@
     "db:migrate": "prisma migrate dev",
     "db:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",
+    "seed:templates": "tsx scripts/seed-templates.ts",
     "load-test": "node scripts/load-test.mjs",
     "analyze": "ANALYZE=true next build"
   },
@@ -60,6 +61,7 @@
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
     "@types/dagre": "^0.7.52",
+    "@types/jsdom": "^28.0.3",
     "@types/node": "^20.17.1",
     "@types/nodemailer": "^6.4.24",
     "@types/react": "^18.3.11",
@@ -67,6 +69,8 @@
     "autoprefixer": "^10.4.20",
     "eslint": "^8.57.1",
     "eslint-config-next": "^14.2.15",
+    "jsdom": "^29.1.1",
+    "juice": "^12.1.1",
     "postcss": "^8.4.47",
     "prisma": "^5.22.0",
     "tailwindcss": "^3.4.14",

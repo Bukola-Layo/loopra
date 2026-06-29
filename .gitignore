@@ -38,3 +38,6 @@ prisma/migrations/
 
 # turbo
 .turbo
+
+# raw email template repos (cloned at seed time)
+raw-templates/
