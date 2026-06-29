@@ -345,7 +345,7 @@ function processRow(
 export function htmlToBlocks(rawHtml: string): EmailBlock[] {
   counter = 0;
 
-  let html = rawHtml
+  const html = rawHtml
     .replace(/<head[\s\S]*?<\/head>/gi, "")
     .replace(/<style[\s\S]*?<\/style>/gi, "")
     .replace(/<!--(?!\[if)[\s\S]*?-->/g, "")
