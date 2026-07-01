@@ -106,6 +106,20 @@ export const POSTMARK_TEMPLATES: TemplateEntry[] = [
   },
 ];
 
+// ─── Custom Stripo Templates ────────────────────────────────────────────────
+
+export const CUSTOM_TEMPLATES: TemplateEntry[] = [
+  {
+    file: "stripo-promotion.html",
+    name: "St. Patrick's Promo",
+    category: "Marketing",
+    slug: "stripo-promotion",
+    description:
+      "A festive promotional email with countdown timer, hero CTA, and product grid — perfect for seasonal campaigns.",
+    industry: "E-commerce",
+  },
+];
+
 // ─── Cerberus Patterns ──────────────────────────────────────────────────────
 // Located under raw-templates/Cerberus/<file>.html
 

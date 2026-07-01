@@ -16,11 +16,14 @@ import fs from "fs";
 import path from "path";
 import { PrismaClient } from "@prisma/client";
 import { normalizeTemplate } from "./normalize-template";
-import { POSTMARK_TEMPLATES, CERBERUS_TEMPLATES } from "./template-map";
+import { htmlToBlocks } from "../lib/html-to-blocks";
+import { serializeBlocks } from "../lib/email-builder";
+import { POSTMARK_TEMPLATES, CERBERUS_TEMPLATES, CUSTOM_TEMPLATES } from "./template-map";
 
 const BASE_DIRS = {
   postmark: path.resolve("raw-templates/postmark-templates/templates/basic"),
   cerberus: path.resolve("raw-templates/Cerberus"),
+  custom: path.resolve("raw-templates/custom"),
 };
 
 export async function seedEmailTemplates(db: PrismaClient) {
@@ -49,11 +52,15 @@ export async function seedEmailTemplates(db: PrismaClient) {
       industry: entry.industry,
     });
 
+    const blocks = htmlToBlocks(normalized.html);
+    const blocksJson = serializeBlocks(blocks);
+
     await db.emailTemplate.upsert({
       where: { slug: normalized.slug },
       update: {
         name: normalized.name,
         html: normalized.html,
+        blocksJson,
         category: normalized.category,
         description: normalized.description,
         industry: normalized.industry,
@@ -64,6 +71,7 @@ export async function seedEmailTemplates(db: PrismaClient) {
         slug: normalized.slug,
         name: normalized.name,
         html: normalized.html,
+        blocksJson,
         category: normalized.category,
         description: normalized.description,
         industry: normalized.industry,
@@ -96,11 +104,15 @@ export async function seedEmailTemplates(db: PrismaClient) {
       industry: entry.industry,
     });
 
+    const blocks = htmlToBlocks(normalized.html);
+    const blocksJson = serializeBlocks(blocks);
+
     await db.emailTemplate.upsert({
       where: { slug: normalized.slug },
       update: {
         name: normalized.name,
         html: normalized.html,
+        blocksJson,
         category: normalized.category,
         description: normalized.description,
         industry: normalized.industry,
@@ -111,6 +123,59 @@ export async function seedEmailTemplates(db: PrismaClient) {
         slug: normalized.slug,
         name: normalized.name,
         html: normalized.html,
+        blocksJson,
+        category: normalized.category,
+        description: normalized.description,
+        industry: normalized.industry,
+        source: "OFFICIAL",
+        isPublished: true,
+      },
+    });
+
+    console.log(`  ✓ ${normalized.name} (${normalized.category})`);
+    seededCount++;
+  }
+
+  // ─── Custom Templates ────────────────────────────────────────────────
+  console.log("  Processing Custom Templates...");
+  for (const entry of CUSTOM_TEMPLATES) {
+    const filePath = path.join(BASE_DIRS.custom, entry.file);
+
+    if (!fs.existsSync(filePath)) {
+      console.warn(`  ⚠️  Not found: ${filePath} — skipping "${entry.name}"`);
+      skippedCount++;
+      continue;
+    }
+
+    const rawHtml = fs.readFileSync(filePath, "utf-8");
+    const normalized = normalizeTemplate(rawHtml, {
+      name: entry.name,
+      slug: entry.slug,
+      category: entry.category,
+      description: entry.description,
+      industry: entry.industry,
+    });
+
+    const blocks = htmlToBlocks(normalized.html);
+    const blocksJson = serializeBlocks(blocks);
+
+    await db.emailTemplate.upsert({
+      where: { slug: normalized.slug },
+      update: {
+        name: normalized.name,
+        html: normalized.html,
+        blocksJson,
+        category: normalized.category,
+        description: normalized.description,
+        industry: normalized.industry,
+        source: "OFFICIAL",
+        isPublished: true,
+      },
+      create: {
+        slug: normalized.slug,
+        name: normalized.name,
+        html: normalized.html,
+        blocksJson,
         category: normalized.category,
         description: normalized.description,
         industry: normalized.industry,

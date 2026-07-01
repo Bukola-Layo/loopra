@@ -1,4 +1,5 @@
 import { JSDOM } from "jsdom";
+import juice from "juice";
 import { type EmailBlock, type BlockType } from "./email-builder";
 
 let counter = 0;
@@ -345,7 +346,19 @@ function processRow(
 export function htmlToBlocks(rawHtml: string): EmailBlock[] {
   counter = 0;
 
-  const html = rawHtml
+  // Inline CSS before stripping <style> tags — preserves styling in block properties
+  let inlined: string;
+  try {
+    inlined = juice(rawHtml, {
+      removeStyleTags: true,
+      preserveMediaQueries: true,
+      preserveFontFaces: true,
+    });
+  } catch {
+    inlined = rawHtml;
+  }
+
+  const html = inlined
     .replace(/<head[\s\S]*?<\/head>/gi, "")
     .replace(/<style[\s\S]*?<\/style>/gi, "")
     .replace(/<!--(?!\[if)[\s\S]*?-->/g, "")
