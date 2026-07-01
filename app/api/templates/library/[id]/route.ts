@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { apiSuccess, handleApiError } from "@/types/api";
+import { flattenBlocks } from "@/lib/email-builder";
 
 export async function GET(
   _req: NextRequest,
@@ -31,7 +32,13 @@ export async function GET(
     if (template?.blocksJson) {
       try {
         const parsed = JSON.parse(template.blocksJson);
-        blocks = parsed.v === 1 ? parsed.blocks : parsed;
+        if (parsed.v === 1 && Array.isArray(parsed.blocks)) {
+          blocks = parsed.blocks;
+        } else if (parsed.v === 2 && Array.isArray(parsed.sections)) {
+          blocks = flattenBlocks(parsed.sections);
+        } else {
+          blocks = parsed;
+        }
       } catch {
         blocks = null;
       }

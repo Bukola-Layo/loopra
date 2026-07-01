@@ -1,10 +1,10 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { cn } from "@/lib/utils";
-import { GripVertical, Trash2, ChevronUp, ChevronDown } from "lucide-react";
+import { GripVertical, Trash2, ChevronUp, ChevronDown, Upload } from "lucide-react";
 import { type EmailBlock, BLOCK_TYPE_LABELS, anyToHtml } from "@/lib/email-builder";
 import { useEditorStore } from "@/store/use-editor-store";
 
@@ -19,6 +19,7 @@ export function CanvasBlock({ block, index, total }: CanvasBlockProps) {
   const selectBlock = useEditorStore((s) => s.selectBlock);
   const removeBlock = useEditorStore((s) => s.removeBlock);
   const moveBlock = useEditorStore((s) => s.moveBlock);
+  const updateBlock = useEditorStore((s) => s.updateBlock);
   const isSelected = selectedBlockId === block.id;
 
   const {
@@ -35,12 +36,16 @@ export function CanvasBlock({ block, index, total }: CanvasBlockProps) {
     transition,
   };
 
+  function handleUpdate(content: Record<string, string>) {
+    updateBlock(block.id, content);
+  }
+
   return (
     <div
       ref={setNodeRef}
       style={style}
       className={cn(
-        "relative group cursor-pointer transition-all duration-150",
+        "relative group transition-all duration-150",
         isDragging && "opacity-40 z-50",
         isSelected
           ? "ring-2 ring-[var(--color-accent-4)] ring-offset-1 rounded-sm"
@@ -111,13 +116,12 @@ export function CanvasBlock({ block, index, total }: CanvasBlockProps) {
 
       {/* Block content preview */}
       <div className="min-h-[32px]">
-        <BlockPreview block={block} />
+        <BlockPreview block={block} isSelected={isSelected} onUpdate={handleUpdate} />
       </div>
     </div>
   );
 }
 
-/** Renders raw HTML content as a visual iframe preview inside the canvas */
 function RawBlockPreview({ html }: { html: string }) {
   const ref = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(0.5);
@@ -160,23 +164,168 @@ function RawBlockPreview({ html }: { html: string }) {
   );
 }
 
-/** Renders a simplified visual preview of a block inside the canvas */
-function BlockPreview({ block }: { block: EmailBlock }) {
+function EditableText({
+  value,
+  isSelected,
+  onBlur,
+  className,
+  style,
+  placeholder,
+}: {
+  value: string;
+  isSelected: boolean;
+  onBlur: (text: string) => void;
+  className?: string;
+  style?: React.CSSProperties;
+  placeholder?: string;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [editing, setEditing] = useState(false);
+
+  useEffect(() => {
+    if (ref.current && !editing) {
+      ref.current.textContent = value;
+    }
+  }, [value, editing]);
+
+  function handleBlur() {
+    setEditing(false);
+    const text = ref.current?.textContent?.trim() ?? "";
+    onBlur(text);
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent) {
+    if (e.key === "Escape") {
+      if (ref.current) ref.current.textContent = value;
+      ref.current?.blur();
+    }
+  }
+
+  return (
+    <div
+      ref={ref}
+      contentEditable={isSelected}
+      suppressContentEditableWarning
+      className={cn(
+        className,
+        isSelected && "cursor-text ring-1 ring-inset ring-primary/30 rounded-sm px-1 -mx-1 focus:outline-none focus:ring-2 focus:ring-primary/50"
+      )}
+      style={style}
+      onBlur={handleBlur}
+      onKeyDown={handleKeyDown}
+      onFocus={() => setEditing(true)}
+      onInput={() => setEditing(true)}
+      onClick={(e) => e.stopPropagation()}
+      data-placeholder={!value && isSelected ? (placeholder ?? "Type here...") : undefined}
+    >
+      {value || placeholder || ""}
+    </div>
+  );
+}
+
+function EditableContainer({
+  value,
+  isSelected,
+  onBlur,
+  className,
+  style,
+  placeholder,
+}: {
+  value: string;
+  isSelected: boolean;
+  onBlur: (text: string) => void;
+  className?: string;
+  style?: React.CSSProperties;
+  placeholder?: string;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (ref.current && !isSelected) {
+      ref.current.textContent = value;
+    }
+  }, [value, isSelected]);
+
+  function handleBlur() {
+    const text = ref.current?.textContent?.trim() ?? "";
+    onBlur(text);
+  }
+
+  return (
+    <div
+      ref={ref}
+      contentEditable={isSelected}
+      suppressContentEditableWarning
+      className={cn(
+        className,
+        isSelected && "cursor-text ring-1 ring-inset ring-primary/30 rounded-sm focus:outline-none"
+      )}
+      style={style}
+      onBlur={handleBlur}
+      onKeyDown={(e) => { if (e.key === "Escape") { e.currentTarget.textContent = value; e.currentTarget.blur(); } }}
+      onClick={(e) => e.stopPropagation()}
+    >
+      {value || placeholder || ""}
+    </div>
+  );
+}
+
+type BlockPreviewProps = {
+  block: EmailBlock;
+  isSelected: boolean;
+  onUpdate: (content: Record<string, string>) => void;
+};
+
+function BlockPreview({ block, isSelected, onUpdate }: BlockPreviewProps) {
   const c = block.content as unknown as Record<string, string>;
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  function set(key: string, value: string) {
+    onUpdate({ ...c, [key]: value });
+  }
+
+  function handleFile(file: File, key: string = "src") {
+    if (!file.type.startsWith("image/")) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      if (typeof e.target?.result === "string") {
+        set(key, e.target.result);
+      }
+    };
+    reader.readAsDataURL(file);
+  }
 
   switch (block.type) {
     case "header":
       if (c.logoSrc) {
         return (
           <div
-            className="py-6 px-8"
+            className="py-6 px-8 relative"
             style={{ textAlign: (c.alignment as "left" | "center" | "right") ?? "center" }}
           >
             <img
               src={c.logoSrc}
               alt={c.text ?? "Logo"}
               style={{ maxWidth: `${c.logoWidth ?? "200"}px`, height: "auto", display: "inline-block" }}
+              className={isSelected ? "cursor-pointer ring-2 ring-primary/30 rounded" : ""}
+              onClick={(e) => {
+                if (isSelected) {
+                  e.stopPropagation();
+                  fileInputRef.current?.click();
+                }
+              }}
             />
+            {isSelected && (
+              <>
+                <button
+                  onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
+                  className="absolute top-2 right-2 p-1.5 bg-white rounded-full shadow-sm border hover:bg-muted transition-colors"
+                >
+                  <Upload className="h-3.5 w-3.5 text-muted-foreground" />
+                </button>
+                <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f, "logoSrc"); }} />
+              </>
+            )}
           </div>
         );
       }
@@ -190,39 +339,67 @@ function BlockPreview({ block }: { block: EmailBlock }) {
             color: c.color ?? "#111827",
           }}
         >
-          {c.text || "Your Logo"}
+          <EditableText
+            value={c.text ?? ""}
+            isSelected={isSelected}
+            onBlur={(text) => set("text", text)}
+            placeholder="Your Logo"
+          />
         </div>
       );
 
     case "text":
       return (
-        <div
+        <EditableContainer
+          value={c.text ?? ""}
+          isSelected={isSelected}
+          onBlur={(text) => set("text", text)}
           className="py-2 px-8 whitespace-pre-wrap"
           style={{
             fontSize: `${c.fontSize ?? "16"}px`,
             lineHeight: 1.6,
             color: c.color ?? "#374151",
           }}
-        >
-          {c.text || "Enter your text here..."}
-        </div>
+          placeholder="Enter your text here..."
+        />
       );
 
     case "image":
       return (
-        <div className="py-2 px-8 text-center">
+        <div className="py-2 px-8 text-center relative">
           {c.src && c.src !== "/placeholder.svg" ? (
-            <img
-              src={c.src}
-              alt={c.alt ?? "Image"}
-              className="max-w-full h-auto mx-auto rounded"
-              style={{ maxHeight: 200 }}
-            />
+            <>
+              <img
+                src={c.src}
+                alt={c.alt ?? "Image"}
+                className={cn("max-w-full h-auto mx-auto rounded", isSelected && "ring-2 ring-primary/30")}
+                style={{ maxHeight: 200 }}
+                onClick={(e) => {
+                  if (isSelected) { e.stopPropagation(); fileInputRef.current?.click(); }
+                }}
+              />
+              {isSelected && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
+                  className="absolute top-2 right-2 p-1.5 bg-white rounded-full shadow-sm border hover:bg-muted transition-colors"
+                >
+                  <Upload className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </>
           ) : (
-            <div className="border-2 border-dashed border-border rounded-lg py-12 px-4 text-muted-foreground text-sm">
-              Drop an image or paste a URL
+            <div
+              className={cn(
+                "border-2 border-dashed rounded-lg py-12 px-4 text-muted-foreground text-sm transition-colors",
+                isSelected && "border-primary hover:bg-primary/5 cursor-pointer"
+              )}
+              onClick={(e) => { if (isSelected) { e.stopPropagation(); fileInputRef.current?.click(); } }}
+            >
+              <Upload className="h-6 w-6 mx-auto mb-2" />
+              {isSelected ? "Click to upload" : "Drop an image or paste a URL"}
             </div>
           )}
+          <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
         </div>
       );
 
@@ -233,13 +410,21 @@ function BlockPreview({ block }: { block: EmailBlock }) {
           style={{ textAlign: (c.alignment as "left" | "center" | "right") ?? "center" }}
         >
           <span
-            className="inline-block rounded-md px-6 py-3 text-sm font-semibold"
+            className={cn(
+              "inline-block rounded-md px-6 py-3 text-sm font-semibold",
+              isSelected && "ring-2 ring-primary/30"
+            )}
             style={{
               backgroundColor: c.bgColor ?? "#6366f1",
               color: c.color ?? "#ffffff",
             }}
           >
-            {c.text || "Click here"}
+            <EditableText
+              value={c.text ?? ""}
+              isSelected={isSelected}
+              onBlur={(text) => set("text", text)}
+              placeholder="Click here"
+            />
           </span>
         </div>
       );
@@ -270,27 +455,52 @@ function BlockPreview({ block }: { block: EmailBlock }) {
             color: c.color ?? "#9ca3af",
           }}
         >
-          {c.text || "© 2026 Your Company"}
+          <EditableText
+            value={c.text ?? ""}
+            isSelected={isSelected}
+            onBlur={(text) => set("text", text)}
+            placeholder="© 2026 Your Company"
+          />
         </div>
       );
 
     case "logo":
       return (
         <div
-          className="py-6 px-8"
+          className="py-6 px-8 relative"
           style={{ textAlign: (c.alignment as "left" | "center" | "right") ?? "center" }}
         >
           {c.src ? (
-            <img
-              src={c.src}
-              alt={c.alt ?? "Logo"}
-              style={{ maxWidth: `${c.width ?? "200"}px`, height: "auto", display: "inline-block" }}
-            />
+            <>
+              <img
+                src={c.src}
+                alt={c.alt ?? "Logo"}
+                style={{ maxWidth: `${c.width ?? "200"}px`, height: "auto", display: "inline-block" }}
+                className={isSelected ? "ring-2 ring-primary/30 rounded cursor-pointer" : ""}
+                onClick={(e) => { if (isSelected) { e.stopPropagation(); fileInputRef.current?.click(); } }}
+              />
+              {isSelected && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
+                  className="absolute top-2 right-2 p-1.5 bg-white rounded-full shadow-sm border hover:bg-muted transition-colors"
+                >
+                  <Upload className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </>
           ) : (
-            <div className="inline-flex items-center gap-2 px-6 py-4 border-2 border-dashed border-border rounded-lg text-muted-foreground text-sm">
-              <span>Upload logo</span>
+            <div
+              className={cn(
+                "inline-flex items-center gap-2 px-6 py-4 border-2 border-dashed rounded-lg text-muted-foreground text-sm transition-colors",
+                isSelected && "border-primary cursor-pointer hover:bg-primary/5"
+              )}
+              onClick={(e) => { if (isSelected) { e.stopPropagation(); fileInputRef.current?.click(); } }}
+            >
+              <Upload className="h-4 w-4" />
+              {isSelected ? "Upload logo" : "Upload logo"}
             </div>
           )}
+          <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
         </div>
       );
 
@@ -307,7 +517,12 @@ function BlockPreview({ block }: { block: EmailBlock }) {
               color: c.color ?? "#6366f1",
             }}
           >
-            {c.text || "Click here"}
+            <EditableText
+              value={c.text ?? ""}
+              isSelected={isSelected}
+              onBlur={(text) => set("text", text)}
+              placeholder="Click here"
+            />
           </span>
         </div>
       );

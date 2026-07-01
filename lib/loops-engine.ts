@@ -2,6 +2,7 @@ import { db } from "./db";
 import { transporter, fromEmail } from "./mail";
 import type { Prisma } from "@prisma/client";
 import { createNotification } from "./notification";
+import { anyToHtml } from "./email-builder";
 
 type LoopWithRelations = Awaited<ReturnType<typeof getLoopWithRelations>>;
 
@@ -262,7 +263,8 @@ async function executeSendEmail(
 
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
-  const html = buildEmailDocument(content, baseUrl, subscriber.id);
+  const rendered = anyToHtml(content);
+  const html = buildEmailDocument(rendered || content, baseUrl, subscriber.id);
 
   try {
     await transporter.sendMail({
