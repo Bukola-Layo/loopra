@@ -16,7 +16,7 @@ type CanvasColumnProps = {
   totalColumns: number;
 };
 
-export function CanvasColumn({ column, sectionId, columnIndex, totalColumns }: CanvasColumnProps) {
+export function CanvasColumn({ column, sectionId, totalColumns }: CanvasColumnProps) {
   const removeColumn = useEditorStore((s) => s.removeColumn);
   const { isOver, setNodeRef } = useDroppable({
     id: `col-${column.id}`,

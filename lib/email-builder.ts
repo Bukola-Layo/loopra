@@ -239,14 +239,6 @@ export function createBlock(type: BlockType): EmailBlock {
   }
 }
 
-function inlineStyles(block: EmailBlock): string {
-  const c = block.content as unknown as Record<string, string>;
-  const parts: string[] = [];
-  const br = c._borderRadius;
-  if (br && br !== "0") parts.push(`border-radius:${br}px`);
-  return parts.join(";");
-}
-
 function blockPadding(block: EmailBlock): string {
   const c = block.content as unknown as Record<string, string>;
   const t = c.paddingTop ?? "";

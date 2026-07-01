@@ -18,8 +18,8 @@ import { EditorSidebar } from "./editor-sidebar";
 import { EditorCanvas } from "./editor-canvas";
 import { EditorProperties } from "./editor-properties";
 import { useEditorStore } from "@/store/use-editor-store";
-import { type EmailBlock, type BlockType, BLOCK_TYPE_LABELS, type Section, serializeSections, flattenBlocks } from "@/lib/email-builder";
-import { Puzzle, Image, Type, RectangleHorizontal, Minus, Link2, Share2, AlignEndHorizontal, FileCode, Columns2 } from "lucide-react";
+import { type EmailBlock, type BlockType, BLOCK_TYPE_LABELS } from "@/lib/email-builder";
+import { Puzzle, Image, Type, RectangleHorizontal, Minus, Link2, Share2, AlignEndHorizontal, FileCode } from "lucide-react";
 import type { ReactNode } from "react";
 
 const BLOCK_ICONS: Record<BlockType, ReactNode> = {
@@ -62,9 +62,7 @@ export function VisualEditor({
   const loadBlocks = useEditorStore((s) => s.loadBlocks);
   const addBlock = useEditorStore((s) => s.addBlock);
   const reorderBlocks = useEditorStore((s) => s.reorderBlocks);
-  const sections = useEditorStore((s) => s.sections);
   const blocks = useEditorStore((s) => s.blocks);
-  const selectBlock = useEditorStore((s) => s.selectBlock);
 
   const [activeSidebarType, setActiveSidebarType] = useState<BlockType | null>(null);
 

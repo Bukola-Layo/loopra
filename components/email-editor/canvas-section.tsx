@@ -2,13 +2,11 @@
 
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { cn } from "@/lib/utils";
-import { GripVertical, Plus, Trash2, Columns2, Columns3 } from "lucide-react";
+import { GripVertical, Trash2, Columns2, Columns3 } from "lucide-react";
 import { type Section } from "@/lib/email-builder";
 import { useEditorStore } from "@/store/use-editor-store";
 import { CanvasColumn } from "./canvas-column";
-import { useState } from "react";
 
 type CanvasSectionProps = {
   section: Section;
@@ -16,11 +14,9 @@ type CanvasSectionProps = {
   total: number;
 };
 
-export function CanvasSection({ section, index, total }: CanvasSectionProps) {
+export function CanvasSection({ section, index }: CanvasSectionProps) {
   const removeSection = useEditorStore((s) => s.removeSection);
   const addColumn = useEditorStore((s) => s.addColumn);
-  const moveBlock = useEditorStore((s) => s.moveBlock);
-  const blockIds = section.columns.flatMap((c) => c.blocks.map((b) => b.id));
 
   const {
     attributes,

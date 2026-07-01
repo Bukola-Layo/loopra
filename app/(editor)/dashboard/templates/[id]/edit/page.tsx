@@ -41,7 +41,6 @@ type TemplateData = {
 export default function EditTemplateRoute() {
   const params = useParams();
   const router = useRouter();
-  const currentBlocks = useEditorStore((s) => s.blocks);
   const [template, setTemplate] = useState<TemplateData | null>(null);
   const [blocks, setBlocks] = useState<EmailBlock[] | null>(null);
   const [loading, setLoading] = useState(true);
