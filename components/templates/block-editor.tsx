@@ -77,8 +77,8 @@ export function BlockEditor({ blocks, onChange }: BlockEditorProps) {
   }
 
   function applyHtmlToBlocks() {
-    const textBlock = createBlock("text");
-    textBlock.content.text = decodeHtmlEntities(htmlDraft);
+    const textBlock = createBlock("text") as EmailBlock;
+    (textBlock.content as unknown as Record<string, string>).text = decodeHtmlEntities(htmlDraft);
     onChange([textBlock]);
     setHtmlChanged(false);
     htmlDirty.current = false;
@@ -129,7 +129,7 @@ export function BlockEditor({ blocks, onChange }: BlockEditorProps) {
   }
 
   function updateBlock(id: string, content: Record<string, string>) {
-    onChange(blocks.map((b) => (b.id === id ? { ...b, content } : b)));
+    onChange(blocks.map((b) => (b.id === id ? { ...b, content } as unknown as EmailBlock : b)));
   }
 
   return (
@@ -405,12 +405,12 @@ type BlockFieldsProps = {
 };
 
 function BlockFields({ block, onUpdate }: BlockFieldsProps) {
-  const c = block.content;
+  const c = block.content as unknown as Record<string, string>;
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   function set(key: string, value: string) {
-    onUpdate(block.id, { ...block.content, [key]: value });
+    onUpdate(block.id, { ...(block.content as unknown as Record<string, string>), [key]: value });
   }
 
   function handleFile(file: File) {

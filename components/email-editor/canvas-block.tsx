@@ -162,7 +162,7 @@ function RawBlockPreview({ html }: { html: string }) {
 
 /** Renders a simplified visual preview of a block inside the canvas */
 function BlockPreview({ block }: { block: EmailBlock }) {
-  const c = block.content;
+  const c = block.content as unknown as Record<string, string>;
 
   switch (block.type) {
     case "header":

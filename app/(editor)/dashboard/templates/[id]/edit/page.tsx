@@ -6,8 +6,10 @@ import dynamic from "next/dynamic";
 import {
   type EmailBlock,
   deserializeBlocks,
-  serializeBlocks,
+  serializeSections,
+  wrapInSections,
   createBlock,
+  tpl,
 } from "@/lib/email-builder";
 import { useEditorStore } from "@/store/use-editor-store";
 import { toast } from "@/hooks/use-toast";
@@ -78,7 +80,7 @@ export default function EditTemplateRoute() {
                   }
                 }
               } catch { /* fall through */ }
-              setBlocks([{ ...createBlock("raw"), content: { html: t.content } }]);
+              setBlocks([tpl("raw", { html: t.content })]);
             } else {
               setBlocks([createBlock("text")]);
             }
@@ -113,7 +115,7 @@ export default function EditTemplateRoute() {
                   }
                 }
               } catch { /* fall through */ }
-              setBlocks([{ ...createBlock("raw"), content: { html: t.html } }]);
+              setBlocks([tpl("raw", { html: t.html })]);
             } else {
               setBlocks([createBlock("text")]);
             }
@@ -156,7 +158,7 @@ export default function EditTemplateRoute() {
               } catch { /* fall through to raw fallback */ }
 
               // Fallback: wrap HTML in a raw block
-              setBlocks([{ ...createBlock("raw"), content: { html: t.html } }]);
+              setBlocks([tpl("raw", { html: t.html })]);
             } else {
               setBlocks([createBlock("text")]);
             }
@@ -174,7 +176,8 @@ export default function EditTemplateRoute() {
 
   async function handleDuplicate() {
     if (!template) return;
-    const serialized = serializeBlocks(currentBlocks.length ? currentBlocks : blocks!);
+    const sections = useEditorStore.getState().sections;
+    const serialized = serializeSections(sections.length ? sections : wrapInSections(blocks ?? []));
     try {
       const res = await fetch("/api/templates", {
         method: "POST",
@@ -198,7 +201,8 @@ export default function EditTemplateRoute() {
 
   async function handleUseInCampaign() {
     if (!template) return;
-    const serialized = serializeBlocks(currentBlocks.length ? currentBlocks : blocks!);
+    const sections = useEditorStore.getState().sections;
+    const serialized = serializeSections(sections.length ? sections : wrapInSections(blocks ?? []));
     try {
       const res = await fetch("/api/campaigns", {
         method: "POST",
@@ -222,11 +226,12 @@ export default function EditTemplateRoute() {
     }
   }
 
-  async function handleSave(updatedBlocks: EmailBlock[]) {
+  async function handleSave(_updatedBlocks: EmailBlock[]) {
     if (!template) return;
     setSaving(true);
     try {
-      const serialized = serializeBlocks(updatedBlocks);
+      const sections = useEditorStore.getState().sections;
+      const serialized = serializeSections(sections);
       const currentName = useEditorStore.getState().documentName;
 
       if (isUserTemplate) {

@@ -1,24 +1,23 @@
 "use client";
 
-import {
-  SortableContext,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
-import { useDroppable } from "@dnd-kit/core";
 import { useEditorStore } from "@/store/use-editor-store";
-import { CanvasBlock } from "./canvas-block";
-import { BlockDropZone } from "./block-drop-zone";
+import { CanvasSection } from "./canvas-section";
+import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { useDroppable } from "@dnd-kit/core";
 import { Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useMemo } from "react";
 
 export function EditorCanvas() {
+  const sections = useEditorStore((s) => s.sections);
   const blocks = useEditorStore((s) => s.blocks);
   const viewport = useEditorStore((s) => s.viewport);
   const selectBlock = useEditorStore((s) => s.selectBlock);
+  const addSection = useEditorStore((s) => s.addSection);
 
   const canvasWidth = viewport === "mobile" ? "375px" : "600px";
+  const sectionIds = useMemo(() => sections.map((s) => s.id), [sections]);
 
-  // Final drop zone at the end of the canvas
   const { isOver: isOverEnd, setNodeRef: endRef } = useDroppable({
     id: "drop-zone-end",
     data: { type: "drop-zone", index: blocks.length },
@@ -36,53 +35,50 @@ export function EditorCanvas() {
         >
           {/* Email container */}
           <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-            <SortableContext
-              items={blocks.map((b) => b.id)}
-              strategy={verticalListSortingStrategy}
-            >
-              {blocks.length === 0 ? (
-                <div
-                  ref={endRef}
-                  className={cn(
-                    "py-20 px-8 text-center transition-all duration-200",
-                    isOverEnd && "bg-primary/5"
-                  )}
-                >
-                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-muted mb-3">
-                    <Plus className="h-5 w-5 text-muted-foreground" />
-                  </div>
-                  <p className="text-sm font-medium text-muted-foreground">
-                    Drag blocks here to start building
-                  </p>
-                  <p className="text-xs text-muted-foreground/60 mt-1">
-                    Or choose a block from the sidebar
-                  </p>
+            {sections.length === 0 ? (
+              <div
+                ref={endRef}
+                className={cn(
+                  "py-20 px-8 text-center transition-all duration-200",
+                  isOverEnd && "bg-primary/5"
+                )}
+              >
+                <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-muted mb-3">
+                  <Plus className="h-5 w-5 text-muted-foreground" />
                 </div>
-              ) : (
-                <div className="relative">
-                  {/* Drop zone before the first block */}
-                  <BlockDropZone id="drop-zone-0" index={0} />
-
-                  {blocks.map((block, i) => (
-                    <div key={block.id}>
-                      <CanvasBlock
-                        block={block}
-                        index={i}
-                        total={blocks.length}
-                      />
-                      {/* Drop zone after each block */}
-                      <BlockDropZone
-                        id={`drop-zone-${i + 1}`}
-                        index={i + 1}
-                      />
-                    </div>
+                <p className="text-sm font-medium text-muted-foreground">
+                  Drag blocks here to start building
+                </p>
+                <p className="text-xs text-muted-foreground/60 mt-1">
+                  Or choose a block from the sidebar
+                </p>
+              </div>
+            ) : (
+              <div className="relative p-4">
+                <SortableContext items={sectionIds} strategy={verticalListSortingStrategy}>
+                  {sections.map((section, i) => (
+                    <CanvasSection
+                      key={section.id}
+                      section={section}
+                      index={i}
+                      total={sections.length}
+                    />
                   ))}
-                </div>
-              )}
-            </SortableContext>
+                </SortableContext>
+
+                {/* Add section button */}
+                <button
+                  onClick={() => addSection()}
+                  className="mt-2 w-full py-3 rounded-lg border-2 border-dashed border-transparent hover:border-border text-muted-foreground hover:text-foreground text-xs font-medium transition-colors flex items-center justify-center gap-1.5"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  Add section
+                </button>
+              </div>
+            )}
           </div>
 
-          {/* Add block button below the email */}
+          {/* Drop zone below the email */}
           {blocks.length > 0 && (
             <div
               ref={endRef}

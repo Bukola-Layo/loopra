@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import dynamic from "next/dynamic";
-import type { EmailBlock } from "@/lib/email-builder";
+import { type EmailBlock, serializeSections, deserializeBlocks, createBlock, tpl } from "@/lib/email-builder";
+import { useEditorStore } from "@/store/use-editor-store";
 
 type VisualEditorProps = {
   initialBlocks: EmailBlock[];
@@ -21,7 +22,6 @@ const VisualEditor = dynamic<VisualEditorProps>(
   () => import("@/components/email-editor/visual-editor").then((m) => m.VisualEditor),
   { ssr: false }
 );
-import { deserializeBlocks, serializeBlocks, createBlock } from "@/lib/email-builder";
 import { toast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 
@@ -60,7 +60,7 @@ export default function EditCampaignRoute() {
                 }
               }
             } catch { /* fall through */ }
-            setBlocks([{ ...createBlock("raw"), content: { html: c.content } }]);
+            setBlocks([tpl("raw", { html: c.content })]);
           } else {
             setBlocks([createBlock("text")]);
           }
@@ -75,11 +75,12 @@ export default function EditCampaignRoute() {
     loadCampaign();
   }, [params?.id]);
 
-  async function handleSave(updatedBlocks: EmailBlock[]) {
+  async function handleSave(_updatedBlocks: EmailBlock[]) {
     if (!campaign) return;
     setSaving(true);
     try {
-      const serialized = serializeBlocks(updatedBlocks);
+      const sections = useEditorStore.getState().sections;
+      const serialized = serializeSections(sections);
       const res = await fetch(`/api/campaigns/${campaign.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -100,10 +101,11 @@ export default function EditCampaignRoute() {
   async function handleSendTest() {
     if (!campaign) return;
     try {
+      const sections = useEditorStore.getState().sections;
       const res = await fetch(`/api/campaigns/${campaign.id}/test-send`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: serializeBlocks(blocks ?? []) }),
+        body: JSON.stringify({ content: serializeSections(sections) }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Failed to send test");

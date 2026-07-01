@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   DndContext,
   closestCenter,
@@ -18,9 +18,8 @@ import { EditorSidebar } from "./editor-sidebar";
 import { EditorCanvas } from "./editor-canvas";
 import { EditorProperties } from "./editor-properties";
 import { useEditorStore } from "@/store/use-editor-store";
-import { type EmailBlock, type BlockType, BLOCK_TYPE_LABELS } from "@/lib/email-builder";
-import { useState } from "react";
-import { Puzzle, Image, Type, RectangleHorizontal, Minus, Link2, Share2, AlignEndHorizontal, FileCode } from "lucide-react";
+import { type EmailBlock, type BlockType, BLOCK_TYPE_LABELS, type Section, serializeSections, flattenBlocks } from "@/lib/email-builder";
+import { Puzzle, Image, Type, RectangleHorizontal, Minus, Link2, Share2, AlignEndHorizontal, FileCode, Columns2 } from "lucide-react";
 import type { ReactNode } from "react";
 
 const BLOCK_ICONS: Record<BlockType, ReactNode> = {
@@ -63,14 +62,15 @@ export function VisualEditor({
   const loadBlocks = useEditorStore((s) => s.loadBlocks);
   const addBlock = useEditorStore((s) => s.addBlock);
   const reorderBlocks = useEditorStore((s) => s.reorderBlocks);
+  const sections = useEditorStore((s) => s.sections);
   const blocks = useEditorStore((s) => s.blocks);
+  const selectBlock = useEditorStore((s) => s.selectBlock);
 
   const [activeSidebarType, setActiveSidebarType] = useState<BlockType | null>(null);
 
   // Initialize store
   useEffect(() => {
     loadBlocks(initialBlocks, documentName);
-    // Cleanup on unmount
     return () => useEditorStore.getState().reset();
   }, [initialBlocks, documentName, loadBlocks]);
 
@@ -95,24 +95,26 @@ export function VisualEditor({
     const isSidebarBlock = active.data.current?.type === "sidebar-block";
     const isCanvasBlock = !isSidebarBlock;
 
-    // Drop new block from sidebar into canvas drop zone
     if (isSidebarBlock && over.data.current?.type === "drop-zone") {
       const index = over.data.current.index as number;
       addBlock(active.data.current?.blockType, index);
       return;
     }
 
-    // Reorder existing canvas blocks
     if (isCanvasBlock && active.id !== over.id) {
       reorderBlocks(active.id as string, over.id as string);
     }
+  }
+
+  function handleSave() {
+    onSave(blocks);
   }
 
   return (
     <div className="flex flex-col h-screen w-full overflow-hidden bg-background">
       <EditorTopBar
         backHref={backHref}
-        onSave={() => onSave(blocks)}
+        onSave={handleSave}
         saveLabel={saveLabel}
         saving={saving}
         onSendTest={onSendTest}

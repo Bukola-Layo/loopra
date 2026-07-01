@@ -10,6 +10,8 @@ import { Plus, Type, Image, Square, Minus, Link2, Share2, AlignCenter, Heading }
 type BlockDropZoneProps = {
   id: string;
   index: number;
+  sectionId?: string;
+  columnId?: string;
 };
 
 const BLOCK_ICONS: Record<string, React.ReactNode> = {
@@ -27,7 +29,7 @@ const BLOCK_ICONS: Record<string, React.ReactNode> = {
 
 const QUICK_BLOCKS: BlockType[] = ["header", "text", "image", "button", "divider", "spacer"];
 
-export function BlockDropZone({ id, index }: BlockDropZoneProps) {
+export function BlockDropZone({ id, index, sectionId, columnId }: BlockDropZoneProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -35,7 +37,7 @@ export function BlockDropZone({ id, index }: BlockDropZoneProps) {
 
   const { isOver, setNodeRef } = useDroppable({
     id,
-    data: { type: "drop-zone", index },
+    data: { type: "drop-zone", index, sectionId, columnId },
   });
 
   useEffect(() => {

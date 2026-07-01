@@ -75,7 +75,7 @@ function BlockSpecificProperties({
   block: EmailBlock;
   onUpdate: (content: Record<string, string>) => void;
 }) {
-  const c = block.content;
+  const c = block.content as unknown as Record<string, string>;
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
 
@@ -380,9 +380,9 @@ function UniversalProperties({
   block: EmailBlock;
   onUpdate: (content: Record<string, string>) => void;
 }) {
-  const c = block.content;
-  const [paddingsLinked, setPaddingsLinked] = useState(true);
+  const c = block.content as unknown as Record<string, string>;
 
+  const [paddingsLinked, setPaddingsLinked] = useState(true);
   function set(key: string, value: string) {
     onUpdate({ ...c, [key]: value });
   }

@@ -18,16 +18,16 @@ Each block has:
 - "content": an object with string key-value pairs for the block's properties
 
 Block properties:
-- header: text (fallback text), fontSize (px), alignment (left/center/right), color (hex), logoSrc (optional), logoWidth (px, optional)
-- text: text (content), fontSize (px), color (hex)
-- image: src (URL), alt (text), width (e.g. "100%")
-- button: text (label), url (link), color (text hex), bgColor (background hex), alignment (left/center/right)
-- divider: color (hex)
-- footer: text (content), fontSize (px), color (hex)
+- header: text (fallback text), fontSize (px), alignment (left/center/right), color (hex), logoSrc (optional URL), logoWidth (px), fontFamily (optional), fontWeight, letterSpacing (optional)
+- text: text (content), fontSize (px), color (hex), fontFamily (optional), lineHeight (optional), fontWeight (optional), letterSpacing (optional)
+- image: src (URL), alt (text), width (e.g. "100%"), linkTo (optional URL)
+- button: text (label), url (link), color (text hex), bgColor (background hex), alignment (left/center/right), fontFamily (optional), fontSize (px), fontWeight, borderRadius (px), borderColor (optional), borderWidth (optional)
+- divider: color (hex), width (percent as "100"), style (solid/dashed/dotted)
+- footer: text (content), fontSize (px), color (hex), fontFamily (optional)
 - spacer: height (px)
 - logo: src (URL), alt (text), width (px), alignment (left/center/right), padding (px)
-- link: text (label), url (URL), fontSize (px), color (hex), alignment (left/center/right)
-- social: alignment (left/center/right), facebook (URL), twitter (URL), instagram (URL), linkedin (URL), youtube (URL)
+- link: text (label), url (URL), fontSize (px), color (hex), alignment (left/center/right), fontFamily (optional), fontWeight (optional)
+- social: alignment (left/center/right), facebook (URL), twitter (URL), instagram (URL), linkedin (URL), youtube (URL), iconStyle (text/icon, optional)
 
 Design rules:
 - Use professional colors: primary #dd2d4a (Loopra red), accent #2cadc0 (teal), backgrounds #fafafa
@@ -39,12 +39,12 @@ Design rules:
 
 Example:
 [
-  { "type": "header", "content": { "text": "Welcome!", "fontSize": "28", "alignment": "center", "color": "#dd2d4a" } },
+  { "type": "header", "content": { "text": "Welcome!", "fontSize": "28", "alignment": "center", "color": "#dd2d4a", "logoSrc": "", "logoWidth": "200", "fontFamily": "", "fontWeight": "700" } },
   { "type": "spacer", "content": { "height": "16" } },
-  { "type": "text", "content": { "text": "Hello there,\\n\\nThanks for joining us!", "fontSize": "16", "color": "#374151" } },
-  { "type": "button", "content": { "text": "Get Started", "url": "https://example.com", "color": "#ffffff", "bgColor": "#dd2d4a", "alignment": "center" } },
-  { "type": "divider", "content": { "color": "#e5e7eb" } },
-  { "type": "footer", "content": { "text": "© 2026 Loopra. All rights reserved.", "fontSize": "12", "color": "#9ca3af" } }
+  { "type": "text", "content": { "text": "Hello there,\\n\\nThanks for joining us!", "fontSize": "16", "color": "#374151", "fontFamily": "", "lineHeight": "1.6" } },
+  { "type": "button", "content": { "text": "Get Started", "url": "https://example.com", "color": "#ffffff", "bgColor": "#dd2d4a", "alignment": "center", "fontSize": "14", "fontWeight": "600", "borderRadius": "6" } },
+  { "type": "divider", "content": { "color": "#e5e7eb", "width": "100", "style": "solid" } },
+  { "type": "footer", "content": { "text": "© 2026 Loopra. All rights reserved.", "fontSize": "12", "color": "#9ca3af", "fontFamily": "" } }
 ]`;
 
 export async function POST(req: NextRequest) {

@@ -1,6 +1,6 @@
 import { JSDOM } from "jsdom";
 import juice from "juice";
-import { type EmailBlock, type BlockType } from "./email-builder";
+import { type EmailBlock, type BlockType, type Alignment } from "./email-builder";
 
 let counter = 0;
 function uid(): string {
@@ -212,7 +212,7 @@ function buildBlock(el: Element, type: BlockType): EmailBlock {
       const fontSize = styleVal(hStyle, "font-size")
         ?? (h ? fontSizeFromTag(h.tagName) : "24");
       const color = extractColor(hStyle, "color", "#111827");
-      return { id: uid(), type: "header", content: { text, fontSize, color, alignment: align, padding: pad.t } };
+      return { id: uid(), type: "header", content: { text, fontSize, color, alignment: align as Alignment, logoSrc: "", logoWidth: "200", fontFamily: "", fontWeight: "700", letterSpacing: "", paddingTop: pad.t } };
     }
 
     case "text": {
@@ -236,7 +236,7 @@ function buildBlock(el: Element, type: BlockType): EmailBlock {
       const color = extractColor(style, "color", "#374151");
       const fontSize = styleVal(style, "font-size") ?? "16";
       const lineHeight = styleVal(style, "line-height") ?? "1.6";
-      return { id: uid(), type: "text", content: { text: content || (el.textContent ?? "").trim(), fontSize, color, lineHeight, padding: pad.t } };
+      return { id: uid(), type: "text", content: { text: content || (el.textContent ?? "").trim(), fontSize, color, fontFamily: "", lineHeight, fontWeight: "", letterSpacing: "", paddingTop: pad.t } };
     }
 
     case "image":
@@ -246,8 +246,9 @@ function buildBlock(el: Element, type: BlockType): EmailBlock {
       const alt = img?.getAttribute("alt") ?? "";
       const width = img?.getAttribute("width") ?? styleVal(elStyle(img!), "max-width") ?? "";
       const linkUrl = el.querySelector("a")?.getAttribute("href") ?? "";
-      const block: EmailBlock = { id: uid(), type, content: { src, alt, width: width || "100%", alignment: align } };
-      if (linkUrl) block.content.linkUrl = linkUrl;
+      const block: EmailBlock = (type === "logo"
+        ? { id: uid(), type: "logo", content: { src, alt, width: width || "100%", alignment: align as Alignment, padding: "24" } }
+        : { id: uid(), type: "image", content: { src, alt, width: width || "100%", linkTo: linkUrl || "" } });
       return block;
     }
 
@@ -265,7 +266,7 @@ function buildBlock(el: Element, type: BlockType): EmailBlock {
       const borderRadius = styleVal(style, "border-radius")
         ?? styleVal(aStyle, "border-radius")
         ?? "6";
-      return { id: uid(), type: "button", content: { text: label, url, color: textColor, bgColor, alignment: align, fontSize, borderRadius, padding: pad.t } };
+      return { id: uid(), type: "button", content: { text: label, url, color: textColor, bgColor, alignment: align as Alignment, fontFamily: "", fontSize, fontWeight: "600", borderRadius, borderColor: "", borderWidth: "", paddingTop: pad.t } };
     }
 
     case "divider": {
@@ -274,14 +275,14 @@ function buildBlock(el: Element, type: BlockType): EmailBlock {
       const dividerColor = styleVal(hrStyle, "border-top-color")
         ?? styleVal(hrStyle, "color")
         ?? "#e5e7eb";
-      return { id: uid(), type: "divider", content: { color: dividerColor, padding: pad.t } };
+      return { id: uid(), type: "divider", content: { color: dividerColor, width: "100", style: "solid", paddingTop: pad.t } };
     }
 
     case "footer": {
       const text = (el.textContent ?? "").trim();
       const color = extractColor(style, "color", "#9ca3af");
       const fontSize = styleVal(style, "font-size") ?? "12";
-      return { id: uid(), type: "footer", content: { text, fontSize, color, alignment: align, padding: pad.t } };
+      return { id: uid(), type: "footer", content: { text, fontSize, color, fontFamily: "", paddingTop: pad.t } };
     }
 
     case "spacer": {
@@ -292,7 +293,7 @@ function buildBlock(el: Element, type: BlockType): EmailBlock {
     }
 
     default:
-      return { id: uid(), type: "text", content: { text: el.textContent?.trim() ?? "", fontSize: "16", color: "#374151" } };
+      return { id: uid(), type: "text", content: { text: el.textContent?.trim() ?? "", fontSize: "16", color: "#374151", fontFamily: "", lineHeight: "1.6", fontWeight: "", letterSpacing: "" } };
   }
 }
 
