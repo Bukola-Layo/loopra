@@ -64,6 +64,20 @@ export default function EditTemplateRoute() {
             if (parsed) {
               setBlocks(parsed);
             } else if (t.content) {
+              try {
+                const conv = await fetch("/api/templates/convert", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ html: t.content }),
+                });
+                if (conv.ok) {
+                  const convData = await conv.json();
+                  if (convData.blocks && Array.isArray(convData.blocks)) {
+                    setBlocks(convData.blocks);
+                    return;
+                  }
+                }
+              } catch { /* fall through */ }
               setBlocks([{ ...createBlock("raw"), content: { html: t.content } }]);
             } else {
               setBlocks([createBlock("text")]);
@@ -85,6 +99,20 @@ export default function EditTemplateRoute() {
             if (parsed) {
               setBlocks(parsed);
             } else if (t.html) {
+              try {
+                const conv = await fetch("/api/templates/convert", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ html: t.html }),
+                });
+                if (conv.ok) {
+                  const convData = await conv.json();
+                  if (convData.blocks && Array.isArray(convData.blocks)) {
+                    setBlocks(convData.blocks);
+                    return;
+                  }
+                }
+              } catch { /* fall through */ }
               setBlocks([{ ...createBlock("raw"), content: { html: t.html } }]);
             } else {
               setBlocks([createBlock("text")]);

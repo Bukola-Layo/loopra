@@ -34,18 +34,45 @@ export default function EditCampaignRoute() {
 
   useEffect(() => {
     if (!params?.id) return;
-    fetch(`/api/campaigns/${params.id}`)
-      .then((r) => r.json())
-      .then((res) => {
+
+    async function loadCampaign() {
+      try {
+        const r = await fetch(`/api/campaigns/${params.id}`);
+        const res = await r.json();
         const c = res.campaign;
         if (c) {
           setCampaign(c);
           const parsed = deserializeBlocks(c.content ?? "");
-          setBlocks(parsed ?? [createBlock("text")]);
+          if (parsed) {
+            setBlocks(parsed);
+          } else if (c.content) {
+            try {
+              const conv = await fetch("/api/templates/convert", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ html: c.content }),
+              });
+              if (conv.ok) {
+                const convData = await conv.json();
+                if (convData.blocks && Array.isArray(convData.blocks)) {
+                  setBlocks(convData.blocks);
+                  return;
+                }
+              }
+            } catch { /* fall through */ }
+            setBlocks([{ ...createBlock("raw"), content: { html: c.content } }]);
+          } else {
+            setBlocks([createBlock("text")]);
+          }
         }
-      })
-      .catch(() => setCampaign(null))
-      .finally(() => setLoading(false));
+      } catch {
+        setCampaign(null);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadCampaign();
   }, [params?.id]);
 
   async function handleSave(updatedBlocks: EmailBlock[]) {
