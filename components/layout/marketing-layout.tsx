@@ -72,18 +72,7 @@ export function MarketingLayout({ children }: MarketingLayoutProps) {
         {/* The main footer grid structure with borders */}
         <div className="container max-w-[1200px] mx-auto px-4 sm:px-8 border-t border-zinc-800/60">
           
-          {/* Socials Row */}
-          <div className="grid grid-cols-2 md:grid-cols-4 border-b border-zinc-800/60">
-            {["Facebook", "Twitter", "Youtube", "Instagram"].map((social, index) => (
-              <a href="#" key={social} className={`flex items-center justify-between p-6 hover:bg-zinc-900/50 transition-colors border-zinc-800/60 ${index < 3 ? 'md:border-r' : ''} ${index % 2 === 0 ? 'border-r' : ''}`}>
-                <span className="text-sm font-medium text-zinc-300">{social}</span>
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-500">
-                  <path d="M5 12h14"></path>
-                  <path d="m12 5 7 7-7 7"></path>
-                </svg>
-              </a>
-            ))}
-          </div>
+
           
           {/* Links Grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 min-h-[300px]">
@@ -136,6 +125,11 @@ export function MarketingLayout({ children }: MarketingLayoutProps) {
             </div>
           </div>
           
+          {/* Copyright Row */}
+          <div className="border-t border-zinc-800/60 py-6 text-center text-sm text-zinc-500 flex flex-col md:flex-row justify-between items-center px-4 md:px-8">
+            <p>&copy; {new Date().getFullYear()} Loopra. All rights reserved.</p>
+            <p className="mt-2 md:mt-0">Developed by <span className="text-zinc-300 font-medium">Bukola Akintomide</span></p>
+          </div>
         </div>
       </footer>
     </div>
