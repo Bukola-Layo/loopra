@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { EmptyState } from "@/components/shared/empty-state";
 import {
   Dialog,
   DialogContent,
@@ -16,7 +15,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Users, Search, Upload, Download, ChevronRight, Plus, X, CheckCircle, AlertCircle, Mail, Calendar, Edit, Trash2, HelpCircle, Send } from "lucide-react";
+import { Search, Upload, Download, ChevronRight, Plus, X, CheckCircle, AlertCircle, Mail, Calendar, Edit, Trash2, HelpCircle, Send } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useOnboardingStore } from "@/store/use-onboarding-store";
 import { parseCSV, previewCSV, mapCSVToSubscribers, type CSVPreview, type FieldMapping } from "@/lib/csv";
