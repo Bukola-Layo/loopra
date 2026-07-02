@@ -16,7 +16,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Search, Upload, Download, ChevronRight, Plus, X, CheckCircle, AlertCircle, Mail, Calendar, Edit, Trash2, HelpCircle, Send } from "lucide-react";
+import { Search, Upload, Download, ChevronRight, Plus, X, CheckCircle, AlertCircle, Mail, Calendar, Edit, Trash2, Send } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useOnboardingStore } from "@/store/use-onboarding-store";
 import { parseCSV, previewCSV, mapCSVToSubscribers, type CSVPreview, type FieldMapping } from "@/lib/csv";
