@@ -58,20 +58,21 @@ type EditorState = {
   reset: () => void;
 };
 
+function withBlocks(sections: Section[]) {
+  return { sections, blocks: flattenBlocks(sections) };
+}
+
 export const useEditorStore = create<EditorState>((set, get) => ({
   sections: [],
+  blocks: [],
   selectedBlockId: null,
   viewport: "desktop",
   isDirty: false,
   documentName: "Untitled",
 
-  get blocks() {
-    return flattenBlocks(get().sections);
-  },
-
   loadBlocks: (blocks, name) =>
     set({
-      sections: wrapInSections(blocks),
+      ...withBlocks(wrapInSections(blocks)),
       selectedBlockId: null,
       isDirty: false,
       ...(name ? { documentName: name } : {}),
@@ -79,7 +80,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
 
   loadSections: (sections, name) =>
     set({
-      sections,
+      ...withBlocks(sections),
       selectedBlockId: null,
       isDirty: false,
       ...(name ? { documentName: name } : {}),
@@ -100,7 +101,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
           lastCol.blocks.push(newBlock);
         }
       }
-      return { sections: next, selectedBlockId: newBlock.id, isDirty: true };
+      return { ...withBlocks(next), selectedBlockId: newBlock.id, isDirty: true };
     }),
 
   removeBlock: (id) =>
@@ -110,7 +111,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       const next = structuredClone(state.sections);
       next[loc.sectionIdx].columns[loc.columnIdx].blocks.splice(loc.blockIdx, 1);
       return {
-        sections: next,
+        ...withBlocks(next),
         selectedBlockId: state.selectedBlockId === id ? null : state.selectedBlockId,
         isDirty: true,
       };
@@ -124,11 +125,11 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       const col = next[loc.sectionIdx].columns[loc.columnIdx];
       if (direction === "up" && loc.blockIdx > 0) {
         col.blocks = arrayMove(col.blocks, loc.blockIdx, loc.blockIdx - 1);
-        return { sections: next, isDirty: true };
+        return { ...withBlocks(next), isDirty: true };
       }
       if (direction === "down" && loc.blockIdx < col.blocks.length - 1) {
         col.blocks = arrayMove(col.blocks, loc.blockIdx, loc.blockIdx + 1);
-        return { sections: next, isDirty: true };
+        return { ...withBlocks(next), isDirty: true };
       }
       return state;
     }),
@@ -152,7 +153,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
         dstCol.blocks.splice(oLoc.blockIdx, 0, moved);
       }
 
-      return { sections: next, isDirty: true };
+      return { ...withBlocks(next), isDirty: true };
     }),
 
   updateBlock: (id, content) =>
@@ -162,7 +163,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       const next = structuredClone(state.sections);
       const block = next[loc.sectionIdx].columns[loc.columnIdx].blocks[loc.blockIdx];
       (block as unknown as { content: Record<string, string> }).content = content;
-      return { sections: next, isDirty: true };
+      return { ...withBlocks(next), isDirty: true };
     }),
 
   selectBlock: (id) => set({ selectedBlockId: id }),
@@ -176,7 +177,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       } else {
         next.push(newSection);
       }
-      return { sections: next, isDirty: true };
+      return { ...withBlocks(next), isDirty: true };
     }),
 
   addContainerSection: (columnCount, atIndex) =>
@@ -194,32 +195,32 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       } else {
         next.push(newSection);
       }
-      return { sections: next, isDirty: true };
+      return { ...withBlocks(next), isDirty: true };
     }),
 
   removeSection: (sectionId) =>
     set((state) => ({
-      sections: state.sections.filter((s) => s.id !== sectionId),
+      ...withBlocks(state.sections.filter((s) => s.id !== sectionId)),
       isDirty: true,
     })),
 
   addColumn: (sectionId, width) =>
     set((state) => ({
-      sections: state.sections.map((s) =>
+      ...withBlocks(state.sections.map((s) =>
         s.id === sectionId
           ? { ...s, columns: [...s.columns, createColumn(width)] }
           : s
-      ),
+      )),
       isDirty: true,
     })),
 
   removeColumn: (sectionId, columnId) =>
     set((state) => ({
-      sections: state.sections.map((s) =>
+      ...withBlocks(state.sections.map((s) =>
         s.id === sectionId
           ? { ...s, columns: s.columns.filter((c) => c.id !== columnId) }
           : s
-      ),
+      )),
       isDirty: true,
     })),
 
@@ -232,6 +233,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   reset: () =>
     set({
       sections: [],
+      blocks: [],
       selectedBlockId: null,
       viewport: "desktop",
       isDirty: false,
