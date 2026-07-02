@@ -179,7 +179,7 @@ export default function PagesPage() {
         <div className="space-y-12">
           <div className="flex flex-col lg:flex-row items-center gap-12 pt-4">
             <div className="flex-1 space-y-6">
-              <h2 className="text-4xl lg:text-5xl font-bold tracking-tight text-[#1e293b] leading-tight">
+              <h2 className="text-3xl lg:text-4xl font-bold tracking-tight text-[#1e293b] leading-tight">
                 Pages that turn visits into engagements
               </h2>
               <p className="text-lg text-slate-600 leading-relaxed max-w-xl">
@@ -268,42 +268,7 @@ export default function PagesPage() {
             </div>
           </div>
 
-          <div className="border-t border-slate-100 pt-10">
-            <h3 className="text-xl font-semibold mb-6 flex items-center gap-2">
-              Get inspired <span className="text-2xl">✨</span>
-            </h3>
-            
-            <div className="grid md:grid-cols-2 gap-6">
-              {/* Inspiration Card 1 */}
-              <div className="rounded-2xl border bg-white overflow-hidden flex h-48 group cursor-pointer hover:shadow-md transition-all">
-                <div className="flex-1 p-6 flex flex-col justify-center">
-                  <h4 className="text-xl font-semibold text-slate-900 leading-tight">Share your contact info with ease</h4>
-                </div>
-                <div className="w-48 bg-[#f59e0b] relative overflow-hidden">
-                  <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-32 h-32 bg-[#4d7c0f] rounded-t-full flex items-end justify-center">
-                    <div className="w-16 h-16 mb-6 rounded-full border-4 border-white overflow-hidden bg-white">
-                      <img src="https://images.unsplash.com/photo-1531123897727-8f129e1bf98c?q=80&w=200&auto=format&fit=crop" className="w-full h-full object-cover" alt="Profile" />
-                    </div>
-                  </div>
-                </div>
-              </div>
 
-              {/* Inspiration Card 2 */}
-              <div className="rounded-2xl border bg-white overflow-hidden flex h-48 group cursor-pointer hover:shadow-md transition-all">
-                <div className="flex-1 p-6 flex flex-col justify-center">
-                  <h4 className="text-xl font-semibold text-slate-900 leading-tight">Increase traffic to your content</h4>
-                </div>
-                <div className="w-48 bg-[#eab308] relative overflow-hidden flex items-center justify-center">
-                  <div className="w-28 h-32 bg-gradient-to-br from-blue-300 to-emerald-200 rounded-xl shadow-lg border-2 border-white flex flex-col items-center pt-4">
-                    <div className="w-10 h-10 rounded-full bg-white shadow-sm overflow-hidden mb-2">
-                      <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=200&auto=format&fit=crop" className="w-full h-full object-cover" alt="Profile" />
-                    </div>
-                    <div className="text-[8px] font-bold tracking-widest text-slate-800">LYONS CURTIS</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       ) : (
         <>
