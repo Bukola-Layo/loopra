@@ -14,7 +14,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { EmptyState } from "@/components/shared/empty-state";
 import { FeatureDiscovery } from "@/components/onboarding/feature-discovery";
 import { useOnboardingStore } from "@/store/use-onboarding-store";
 import {
