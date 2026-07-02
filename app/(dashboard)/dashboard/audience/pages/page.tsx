@@ -185,30 +185,30 @@ export default function PagesPage() {
               <p className="text-lg text-slate-600 leading-relaxed max-w-xl">
                 Create a customized landing page that makes it easy for your audience to engage. Gain valuable insights and track your performance.
               </p>
-              <Button size="lg" className="bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-medium px-8 h-12 text-base rounded-lg mt-4" onClick={() => { window.location.href = "/dashboard/audience/pages/new"; }}>
+              <Button size="lg" className="bg-[var(--color-role-primary)] hover:brightness-90 text-white font-medium px-8 h-12 text-base rounded-lg mt-4" onClick={() => { window.location.href = "/dashboard/audience/pages/new"; }}>
                 Create your first page
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </div>
             
             <div className="flex-1 w-full lg:max-w-xl">
-              <div className="relative w-full aspect-[4/3] bg-[#c4b5fd] rounded-3xl overflow-hidden p-6">
+              <div className="relative w-full aspect-[4/3] bg-[#fce4e7] rounded-3xl overflow-hidden p-6">
                 
                 {/* Mobile phone mockup in the center */}
-                <div className="absolute top-8 left-1/2 -translate-x-1/2 w-48 h-96 bg-[#4c1d95] rounded-[2rem] border-[6px] border-[#2e1065] shadow-2xl overflow-hidden flex flex-col">
+                <div className="absolute top-8 left-1/2 -translate-x-1/2 w-48 h-96 bg-[var(--color-accent-5)] rounded-[2rem] border-[6px] border-[var(--color-accent-3)] shadow-2xl overflow-hidden flex flex-col">
                   {/* Phone Header */}
-                  <div className="h-16 bg-[#5b21b6] w-full flex items-center px-4 justify-between">
-                    <div className="w-20 h-3 bg-[#4c1d95] rounded-full"></div>
-                    <div className="w-6 h-6 rounded-full bg-[#7c3aed]"></div>
+                  <div className="h-16 bg-[var(--color-role-primary)] w-full flex items-center px-4 justify-between">
+                    <div className="w-20 h-3 bg-[var(--color-accent-5)] rounded-full"></div>
+                    <div className="w-6 h-6 rounded-full bg-[var(--color-accent-4)]"></div>
                   </div>
                   {/* Phone Content */}
                   <div className="p-4 space-y-4">
                     <div className="flex justify-center gap-2">
-                      <div className="w-5 h-5 rounded-full bg-[#a78bfa]"></div>
-                      <div className="w-5 h-5 rounded-full bg-[#a78bfa]"></div>
-                      <div className="w-5 h-5 rounded-full bg-[#a78bfa]"></div>
+                      <div className="w-5 h-5 rounded-full bg-[var(--color-accent-4)]"></div>
+                      <div className="w-5 h-5 rounded-full bg-[var(--color-accent-4)]"></div>
+                      <div className="w-5 h-5 rounded-full bg-[var(--color-accent-4)]"></div>
                     </div>
-                    <div className="w-full h-8 border border-[#a78bfa] rounded flex items-center justify-center text-[#c4b5fd] text-xs font-medium">
+                    <div className="w-full h-8 border border-[var(--color-accent-3)] rounded flex items-center justify-center text-[var(--color-accent-3)] text-xs font-medium">
                       Shop Products
                     </div>
                   </div>
@@ -220,17 +220,17 @@ export default function PagesPage() {
                 <div className="absolute top-12 left-4 w-40 bg-white/90 backdrop-blur rounded-xl p-3 shadow-xl">
                   <div className="text-[10px] font-medium text-slate-500 mb-2">Engagements</div>
                   <div className="flex items-end gap-1.5 h-12">
-                    <div className="w-full bg-[#10b981] h-[30%] rounded-sm"></div>
-                    <div className="w-full bg-[#10b981] h-[45%] rounded-sm"></div>
-                    <div className="w-full bg-[#10b981] h-[20%] rounded-sm"></div>
-                    <div className="w-full bg-[#10b981] h-[70%] rounded-sm"></div>
-                    <div className="w-full bg-[#10b981] h-[100%] rounded-sm"></div>
+                    <div className="w-full bg-[var(--color-role-primary)] h-[30%] rounded-sm"></div>
+                    <div className="w-full bg-[var(--color-role-primary)] h-[45%] rounded-sm"></div>
+                    <div className="w-full bg-[var(--color-role-primary)] h-[20%] rounded-sm"></div>
+                    <div className="w-full bg-[var(--color-role-primary)] h-[70%] rounded-sm"></div>
+                    <div className="w-full bg-[var(--color-role-primary)] h-[100%] rounded-sm"></div>
                   </div>
                 </div>
 
                 {/* Video Card (Bottom Left) */}
-                <div className="absolute bottom-10 left-8 w-32 bg-[#ddd6fe] rounded-xl p-3 shadow-xl border border-white/20">
-                  <div className="text-[10px] font-medium text-[#4c1d95] mb-2">Video</div>
+                <div className="absolute bottom-10 left-8 w-32 bg-[var(--color-accent-2)] rounded-xl p-3 shadow-xl border border-white/20">
+                  <div className="text-[10px] font-medium text-[var(--color-accent-5)] mb-2">Video</div>
                   <div className="w-full h-16 bg-slate-400 rounded-lg overflow-hidden relative">
                      <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
                         <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center">
@@ -243,24 +243,24 @@ export default function PagesPage() {
                 {/* Latest Collection (Center overlap) */}
                 <div className="absolute bottom-20 left-1/2 -translate-x-1/2 w-64 bg-white/95 backdrop-blur rounded-xl p-3 shadow-2xl border border-slate-100">
                   <div className="text-[10px] font-bold text-slate-800 mb-2 flex items-center gap-1">
-                    <div className="w-2 h-2 bg-[#8b5cf6] rounded-sm"></div>
+                    <div className="w-2 h-2 bg-[var(--color-role-primary)] rounded-sm"></div>
                     Latest collection
                   </div>
                   <div className="flex gap-2">
-                    <div className="flex-1 h-16 bg-[#6ee7b7] rounded-lg"></div>
-                    <div className="flex-1 h-16 bg-[#fca5a5] rounded-lg"></div>
-                    <div className="flex-1 h-16 bg-[#fbbf24] rounded-lg"></div>
+                    <div className="flex-1 h-16 bg-[var(--color-accent-5)] rounded-lg"></div>
+                    <div className="flex-1 h-16 bg-[var(--color-role-primary)] rounded-lg"></div>
+                    <div className="flex-1 h-16 bg-[var(--color-accent-4)] rounded-lg"></div>
                   </div>
                 </div>
 
                 {/* Social icons (Right) */}
                 <div className="absolute bottom-16 right-6 w-24 bg-white/90 backdrop-blur rounded-xl p-3 shadow-xl">
                   <div className="grid grid-cols-3 gap-2">
-                    <div className="w-5 h-5 rounded-full border border-slate-300 flex items-center justify-center"><div className="w-2 h-2 bg-slate-400 rounded-full"></div></div>
-                    <div className="w-5 h-5 rounded-full border border-slate-300 flex items-center justify-center"><div className="w-2 h-2 bg-slate-400 rounded-sm"></div></div>
-                    <div className="w-5 h-5 rounded-full border border-slate-300 flex items-center justify-center"><div className="w-2 h-2 bg-slate-400 rounded-full"></div></div>
-                    <div className="w-5 h-5 rounded-full border border-slate-300 flex items-center justify-center"><div className="w-2 h-2 bg-slate-400 rounded-full"></div></div>
-                    <div className="w-5 h-5 rounded-full border border-slate-300 flex items-center justify-center"><div className="w-2 h-2 bg-slate-400 rounded-full"></div></div>
+                    <div className="w-5 h-5 rounded-full border border-slate-300 flex items-center justify-center"><div className="w-2 h-2 bg-[var(--color-role-primary)] rounded-full"></div></div>
+                    <div className="w-5 h-5 rounded-full border border-slate-300 flex items-center justify-center"><div className="w-2 h-2 bg-[var(--color-accent-5)] rounded-sm"></div></div>
+                    <div className="w-5 h-5 rounded-full border border-slate-300 flex items-center justify-center"><div className="w-2 h-2 bg-[var(--color-role-primary)] rounded-full"></div></div>
+                    <div className="w-5 h-5 rounded-full border border-slate-300 flex items-center justify-center"><div className="w-2 h-2 bg-[var(--color-accent-5)] rounded-full"></div></div>
+                    <div className="w-5 h-5 rounded-full border border-slate-300 flex items-center justify-center"><div className="w-2 h-2 bg-[var(--color-role-primary)] rounded-full"></div></div>
                   </div>
                 </div>
                 
