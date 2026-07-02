@@ -26,7 +26,11 @@ export async function GET(
       return apiError("Campaign not found", 404);
     }
 
-    return apiSuccess({ campaign });
+    const activeSubscribers = await db.subscriber.count({
+      where: { workspaceId, status: "active" },
+    });
+
+    return apiSuccess({ campaign, activeSubscribers });
   } catch (error) {
     return handleApiError(error);
   }

@@ -71,6 +71,8 @@ export default function CampaignDetailPage() {
   } | null>(null);
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
 
+  const [activeSubscribers, setActiveSubscribers] = useState(0);
+
   useEffect(() => {
     if (!params?.id) return;
     fetch(`/api/campaigns/${params.id}`)
@@ -78,6 +80,7 @@ export default function CampaignDetailPage() {
       .then((res) => {
         const c = res.campaign ?? null;
         setCampaign(c);
+        setActiveSubscribers(res.activeSubscribers ?? 0);
         if (c) {
           setEditTitle(c.title);
           setEditSubject(c.subject);
@@ -418,6 +421,11 @@ export default function CampaignDetailPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{campaign.recipientCount}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {campaign.status === "draft"
+                ? `${activeSubscribers} active subscriber${activeSubscribers !== 1 ? "s" : ""} available`
+                : "delivered"}
+            </p>
           </CardContent>
         </Card>
         <Card>
@@ -637,6 +645,11 @@ export default function CampaignDetailPage() {
           </DialogHeader>
 
           <div className="space-y-4 py-2">
+            <div className="flex items-center justify-between px-1">
+              <span className="text-sm font-medium">Estimated recipients</span>
+              <span className="text-2xl font-bold tabular-nums">{activeSubscribers}</span>
+            </div>
+
             {segments.length > 0 && (
               <div className="space-y-2">
                 <Label className="text-xs text-muted-foreground uppercase tracking-wider">Segments</Label>
@@ -661,8 +674,8 @@ export default function CampaignDetailPage() {
 
             <p className="text-xs text-muted-foreground">
               {selectedSegments.length === 0
-                ? "No segments selected — will send to all active subscribers."
-                : `Sending to ${selectedSegments.length} segment${selectedSegments.length !== 1 ? "s" : ""}.`}
+                ? `Will send to all ${activeSubscribers} active subscriber${activeSubscribers !== 1 ? "s" : ""}.`
+                : `Filtering by ${selectedSegments.length} segment${selectedSegments.length !== 1 ? "s" : ""}.`}
             </p>
           </div>
 
@@ -670,8 +683,8 @@ export default function CampaignDetailPage() {
             <Button type="button" variant="outline" onClick={() => setSendDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleSend} disabled={saving}>
-              {saving ? "Sending..." : "Send now"}
+            <Button onClick={handleSend} disabled={saving || activeSubscribers === 0}>
+              {activeSubscribers === 0 ? "No subscribers to send to" : saving ? "Sending..." : "Send now"}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -89,6 +89,10 @@ export async function renderEmailHtml(
 </html>`;
 }
 
+function isSmtpConfigured(): boolean {
+  return !!(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS);
+}
+
 export async function sendCampaign(
   campaignId: string,
   workspaceId: string,
@@ -97,6 +101,12 @@ export async function sendCampaign(
     subscriberIds,
   }: { segmentIds?: string[]; subscriberIds?: string[] } = {}
 ): Promise<{ sent: number; failed: number }> {
+  if (!isSmtpConfigured()) {
+    throw new Error(
+      "Email sending is not configured. Set SMTP_HOST, SMTP_USER, and SMTP_PASS environment variables."
+    );
+  }
+
   const [campaign, subscribers] = await Promise.all([
     db.campaign.findFirst({ where: { id: campaignId, workspaceId } }),
     resolveRecipients(workspaceId, { segmentIds, subscriberIds }),
@@ -104,6 +114,10 @@ export async function sendCampaign(
 
   if (!campaign) throw new Error("Campaign not found");
   if (campaign.status !== "draft") throw new Error("Can only send draft campaigns");
+
+  if (subscribers.length === 0) {
+    throw new Error("No active subscribers to send to");
+  }
 
   await db.campaign.update({
     where: { id: campaign.id },

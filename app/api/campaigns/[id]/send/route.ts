@@ -42,11 +42,22 @@ export async function POST(
         subscriberIds: result.data.subscriberIds,
       });
 
+      if (sent === 0 && failed > 0) {
+        await db.campaign.update({
+          where: { id: params.id },
+          data: { status: "draft" },
+        });
+        return apiError(
+          `All ${failed} email${failed !== 1 ? "s" : ""} failed to send. Check your SMTP configuration.`,
+          500
+        );
+      }
+
       await createNotification({
         workspaceId,
         type: "campaign_sent",
         title: "Campaign sent",
-        description: `"${campaign.title}" was sent to ${sent} subscriber${sent !== 1 ? "s" : ""}`,
+        description: `"${campaign.title}" was sent to ${sent} subscriber${sent !== 1 ? "s" : ""}${failed > 0 ? ` (${failed} failed)` : ""}`,
         link: `/dashboard/campaigns`,
       });
 
