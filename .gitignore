@@ -39,5 +39,8 @@ prisma/migrations/
 # turbo
 .turbo
 
+# build artifacts
+tsconfig.tsbuildinfo
+
 # raw email template repos (cloned at seed time)
 raw-templates/
