@@ -47,6 +47,7 @@ import {
   Globe,
   BarChart3,
   Calendar,
+  ArrowRight,
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
@@ -157,96 +158,17 @@ export default function PagesPage() {
             Create beautiful subscriber pages to grow your audience
           </p>
         </div>
-        <Link href="/dashboard/audience/pages/new">
-          <Button size="lg" className="gap-2 shadow-sm">
-            <Plus className="h-5 w-5" />
-            Create Page
-          </Button>
-        </Link>
+        {pages.length > 0 && (
+          <Link href="/dashboard/audience/pages/new">
+            <Button size="lg" className="gap-2 shadow-sm">
+              <Plus className="h-5 w-5" />
+              Create Page
+            </Button>
+          </Link>
+        )}
       </div>
 
       <FeatureDiscovery featureId="pages" />
-
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardContent className="flex items-center gap-4 pt-6">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-              <Globe className="h-6 w-6 text-primary" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Total Pages</p>
-              <p className="text-2xl font-bold">{stats.totalPages}</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="flex items-center gap-4 pt-6">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500/10">
-              <Users className="h-6 w-6 text-blue-500" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Total Subscribers</p>
-              <p className="text-2xl font-bold">{stats.totalSubscribers.toLocaleString()}</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="flex items-center gap-4 pt-6">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-green-500/10">
-              <BarChart3 className="h-6 w-6 text-green-500" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Pages Published</p>
-              <p className="text-2xl font-bold">
-                {pages.filter((p) => p.status === "published").length}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="flex items-center gap-4 pt-6">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500/10">
-              <TrendingUp className="h-6 w-6 text-amber-500" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Avg Conversion</p>
-              <p className="text-2xl font-bold">{conversionRate}%</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Search pages..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9"
-          />
-        </div>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-36">
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All</SelectItem>
-            <SelectItem value="published">Published</SelectItem>
-            <SelectItem value="draft">Draft</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={sort} onValueChange={setSort}>
-          <SelectTrigger className="w-44">
-            <SelectValue placeholder="Sort" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="newest">Newest</SelectItem>
-            <SelectItem value="oldest">Oldest</SelectItem>
-            <SelectItem value="subscribers">Most Subscribers</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
 
       {loading ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -255,17 +177,219 @@ export default function PagesPage() {
           ))}
         </div>
       ) : pages.length === 0 ? (
-        <EmptyState
-          icon={<ExternalLink className="h-8 w-8" />}
-          title="No pages yet"
-          description="Create your first subscriber page to start collecting emails."
-          action={{
-            label: "Create Page",
-            onClick: () => { window.location.href = "/dashboard/audience/pages/new"; },
-          }}
-        />
+        <div className="space-y-12">
+          <div className="flex flex-col lg:flex-row items-center gap-12 pt-4">
+            <div className="flex-1 space-y-6">
+              <h2 className="text-4xl lg:text-5xl font-bold tracking-tight text-[#1e293b] leading-tight">
+                Pages that turn visits into engagements
+              </h2>
+              <p className="text-lg text-slate-600 leading-relaxed max-w-xl">
+                Create a customized landing page that makes it easy for your audience to engage. Gain valuable insights and track your performance.
+              </p>
+              <Button size="lg" className="bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-medium px-8 h-12 text-base rounded-lg mt-4" onClick={() => { window.location.href = "/dashboard/audience/pages/new"; }}>
+                Create your first page
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </div>
+            
+            <div className="flex-1 w-full lg:max-w-xl">
+              <div className="relative w-full aspect-[4/3] bg-[#c4b5fd] rounded-3xl overflow-hidden p-6">
+                
+                {/* Mobile phone mockup in the center */}
+                <div className="absolute top-8 left-1/2 -translate-x-1/2 w-48 h-96 bg-[#4c1d95] rounded-[2rem] border-[6px] border-[#2e1065] shadow-2xl overflow-hidden flex flex-col">
+                  {/* Phone Header */}
+                  <div className="h-16 bg-[#5b21b6] w-full flex items-center px-4 justify-between">
+                    <div className="w-20 h-3 bg-[#4c1d95] rounded-full"></div>
+                    <div className="w-6 h-6 rounded-full bg-[#7c3aed]"></div>
+                  </div>
+                  {/* Phone Content */}
+                  <div className="p-4 space-y-4">
+                    <div className="flex justify-center gap-2">
+                      <div className="w-5 h-5 rounded-full bg-[#a78bfa]"></div>
+                      <div className="w-5 h-5 rounded-full bg-[#a78bfa]"></div>
+                      <div className="w-5 h-5 rounded-full bg-[#a78bfa]"></div>
+                    </div>
+                    <div className="w-full h-8 border border-[#a78bfa] rounded flex items-center justify-center text-[#c4b5fd] text-xs font-medium">
+                      Shop Products
+                    </div>
+                  </div>
+                </div>
+
+                {/* Floating elements */}
+                
+                {/* Engagements chart (Left) */}
+                <div className="absolute top-12 left-4 w-40 bg-white/90 backdrop-blur rounded-xl p-3 shadow-xl">
+                  <div className="text-[10px] font-medium text-slate-500 mb-2">Engagements</div>
+                  <div className="flex items-end gap-1.5 h-12">
+                    <div className="w-full bg-[#10b981] h-[30%] rounded-sm"></div>
+                    <div className="w-full bg-[#10b981] h-[45%] rounded-sm"></div>
+                    <div className="w-full bg-[#10b981] h-[20%] rounded-sm"></div>
+                    <div className="w-full bg-[#10b981] h-[70%] rounded-sm"></div>
+                    <div className="w-full bg-[#10b981] h-[100%] rounded-sm"></div>
+                  </div>
+                </div>
+
+                {/* Video Card (Bottom Left) */}
+                <div className="absolute bottom-10 left-8 w-32 bg-[#ddd6fe] rounded-xl p-3 shadow-xl border border-white/20">
+                  <div className="text-[10px] font-medium text-[#4c1d95] mb-2">Video</div>
+                  <div className="w-full h-16 bg-slate-400 rounded-lg overflow-hidden relative">
+                     <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                        <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center">
+                          <div className="w-0 h-0 border-t-[4px] border-t-transparent border-l-[6px] border-l-black border-b-[4px] border-b-transparent ml-0.5"></div>
+                        </div>
+                     </div>
+                  </div>
+                </div>
+
+                {/* Latest Collection (Center overlap) */}
+                <div className="absolute bottom-20 left-1/2 -translate-x-1/2 w-64 bg-white/95 backdrop-blur rounded-xl p-3 shadow-2xl border border-slate-100">
+                  <div className="text-[10px] font-bold text-slate-800 mb-2 flex items-center gap-1">
+                    <div className="w-2 h-2 bg-[#8b5cf6] rounded-sm"></div>
+                    Latest collection
+                  </div>
+                  <div className="flex gap-2">
+                    <div className="flex-1 h-16 bg-[#6ee7b7] rounded-lg"></div>
+                    <div className="flex-1 h-16 bg-[#fca5a5] rounded-lg"></div>
+                    <div className="flex-1 h-16 bg-[#fbbf24] rounded-lg"></div>
+                  </div>
+                </div>
+
+                {/* Social icons (Right) */}
+                <div className="absolute bottom-16 right-6 w-24 bg-white/90 backdrop-blur rounded-xl p-3 shadow-xl">
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="w-5 h-5 rounded-full border border-slate-300 flex items-center justify-center"><div className="w-2 h-2 bg-slate-400 rounded-full"></div></div>
+                    <div className="w-5 h-5 rounded-full border border-slate-300 flex items-center justify-center"><div className="w-2 h-2 bg-slate-400 rounded-sm"></div></div>
+                    <div className="w-5 h-5 rounded-full border border-slate-300 flex items-center justify-center"><div className="w-2 h-2 bg-slate-400 rounded-full"></div></div>
+                    <div className="w-5 h-5 rounded-full border border-slate-300 flex items-center justify-center"><div className="w-2 h-2 bg-slate-400 rounded-full"></div></div>
+                    <div className="w-5 h-5 rounded-full border border-slate-300 flex items-center justify-center"><div className="w-2 h-2 bg-slate-400 rounded-full"></div></div>
+                  </div>
+                </div>
+                
+              </div>
+            </div>
+          </div>
+
+          <div className="border-t border-slate-100 pt-10">
+            <h3 className="text-xl font-semibold mb-6 flex items-center gap-2">
+              Get inspired <span className="text-2xl">✨</span>
+            </h3>
+            
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* Inspiration Card 1 */}
+              <div className="rounded-2xl border bg-white overflow-hidden flex h-48 group cursor-pointer hover:shadow-md transition-all">
+                <div className="flex-1 p-6 flex flex-col justify-center">
+                  <h4 className="text-xl font-semibold text-slate-900 leading-tight">Share your contact info with ease</h4>
+                </div>
+                <div className="w-48 bg-[#f59e0b] relative overflow-hidden">
+                  <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-32 h-32 bg-[#4d7c0f] rounded-t-full flex items-end justify-center">
+                    <div className="w-16 h-16 mb-6 rounded-full border-4 border-white overflow-hidden bg-white">
+                      <img src="https://images.unsplash.com/photo-1531123897727-8f129e1bf98c?q=80&w=200&auto=format&fit=crop" className="w-full h-full object-cover" alt="Profile" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Inspiration Card 2 */}
+              <div className="rounded-2xl border bg-white overflow-hidden flex h-48 group cursor-pointer hover:shadow-md transition-all">
+                <div className="flex-1 p-6 flex flex-col justify-center">
+                  <h4 className="text-xl font-semibold text-slate-900 leading-tight">Increase traffic to your content</h4>
+                </div>
+                <div className="w-48 bg-[#eab308] relative overflow-hidden flex items-center justify-center">
+                  <div className="w-28 h-32 bg-gradient-to-br from-blue-300 to-emerald-200 rounded-xl shadow-lg border-2 border-white flex flex-col items-center pt-4">
+                    <div className="w-10 h-10 rounded-full bg-white shadow-sm overflow-hidden mb-2">
+                      <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=200&auto=format&fit=crop" className="w-full h-full object-cover" alt="Profile" />
+                    </div>
+                    <div className="text-[8px] font-bold tracking-widest text-slate-800">LYONS CURTIS</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <Card>
+              <CardContent className="flex items-center gap-4 pt-6">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+                  <Globe className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Total Pages</p>
+                  <p className="text-2xl font-bold">{stats.totalPages}</p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="flex items-center gap-4 pt-6">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500/10">
+                  <Users className="h-6 w-6 text-blue-500" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Total Subscribers</p>
+                  <p className="text-2xl font-bold">{stats.totalSubscribers.toLocaleString()}</p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="flex items-center gap-4 pt-6">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-green-500/10">
+                  <BarChart3 className="h-6 w-6 text-green-500" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Pages Published</p>
+                  <p className="text-2xl font-bold">
+                    {pages.filter((p) => p.status === "published").length}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="flex items-center gap-4 pt-6">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500/10">
+                  <TrendingUp className="h-6 w-6 text-amber-500" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Avg Conversion</p>
+                  <p className="text-2xl font-bold">{conversionRate}%</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Search pages..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-36">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="published">Published</SelectItem>
+                <SelectItem value="draft">Draft</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={sort} onValueChange={setSort}>
+              <SelectTrigger className="w-44">
+                <SelectValue placeholder="Sort" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="newest">Newest</SelectItem>
+                <SelectItem value="oldest">Oldest</SelectItem>
+                <SelectItem value="subscribers">Most Subscribers</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {pages.map((page) => (
             <div key={page.id} className="group relative">
               <Link href={`/dashboard/audience/pages/${page.id}`}>
@@ -356,6 +480,7 @@ export default function PagesPage() {
             </div>
           ))}
         </div>
+        </>
       )}
 
       <Dialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
