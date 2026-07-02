@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -431,7 +432,7 @@ export default function AudiencePage() {
           ))}
         </div>
       ) : subscribers.length === 0 ? (
-        <div className="flex flex-col md:flex-row items-center justify-between bg-[#F9FAFB] rounded-2xl p-8 md:p-12 border overflow-hidden relative">
+        <div className="flex flex-col md:flex-row items-center justify-between bg-white rounded-2xl p-8 md:p-12 border overflow-hidden relative">
           <div className="max-w-md space-y-6 z-10">
             <div className="space-y-2">
               <h2 className="text-3xl font-semibold tracking-tight text-slate-900">Add your contacts</h2>
@@ -444,16 +445,9 @@ export default function AudiencePage() {
               <Button onClick={() => setDialogOpen(true)} className="bg-[#0f766e] hover:bg-[#0f766e]/90 text-white font-medium px-6">
                 Add contacts
               </Button>
-              <Button variant="outline" className="bg-white font-medium border-slate-200 text-slate-700 hover:bg-slate-50 px-6">
-                Create popup form
+              <Button asChild variant="outline" className="bg-white font-medium border-slate-200 text-slate-700 hover:bg-slate-50 px-6">
+                <Link href="/dashboard/audience/forms">Create form</Link>
               </Button>
-            </div>
-            
-            <div className="pt-2">
-              <a href="#" className="inline-flex items-center text-sm font-medium text-[#0f766e] hover:underline">
-                <HelpCircle className="h-4 w-4 mr-1.5" />
-                How to add contacts
-              </a>
             </div>
           </div>
           
