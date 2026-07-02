@@ -48,6 +48,7 @@ type EditorState = {
   updateBlock: (id: string, content: Record<string, string>) => void;
   selectBlock: (id: string | null) => void;
   addSection: (atIndex?: number) => void;
+  addContainerSection: (columnCount: number, atIndex?: number) => void;
   removeSection: (sectionId: string) => void;
   addColumn: (sectionId: string, width: number) => void;
   removeColumn: (sectionId: string, columnId: string) => void;
@@ -169,6 +170,24 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   addSection: (atIndex) =>
     set((state) => {
       const newSection = createSection([createColumn(100)]);
+      const next = [...state.sections];
+      if (atIndex !== undefined && atIndex >= 0 && atIndex <= next.length) {
+        next.splice(atIndex, 0, newSection);
+      } else {
+        next.push(newSection);
+      }
+      return { sections: next, isDirty: true };
+    }),
+
+  addContainerSection: (columnCount, atIndex) =>
+    set((state) => {
+      const equalWidth = Math.floor(100 / columnCount);
+      const columns = Array.from({ length: columnCount }, (_, i) => {
+        const isLast = i === columnCount - 1;
+        const width = isLast ? 100 - equalWidth * (columnCount - 1) : equalWidth;
+        return createColumn(width);
+      });
+      const newSection = createSection(columns);
       const next = [...state.sections];
       if (atIndex !== undefined && atIndex >= 0 && atIndex <= next.length) {
         next.splice(atIndex, 0, newSection);

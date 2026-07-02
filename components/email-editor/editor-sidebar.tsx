@@ -1,13 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, ChevronUp, Layers, Paintbrush, Sparkles, GripVertical, Loader2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Layers, Paintbrush, Sparkles, GripVertical, Loader2, Columns2, Columns3, LayoutGrid } from "lucide-react";
 import { type BlockType, BLOCK_TYPE_LABELS, type EmailBlock } from "@/lib/email-builder";
 import { useEditorStore } from "@/store/use-editor-store";
 import { DraggableBlockItem } from "./draggable-block-item";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
+import { useDraggable } from "@dnd-kit/core";
+
+const CONTAINER_TYPES = [
+  { columns: 2, label: "2 Columns", icon: Columns2 },
+  { columns: 3, label: "3 Columns", icon: Columns3 },
+  { columns: 4, label: "4 Columns", icon: LayoutGrid },
+] as const;
 
 const CONTENT_BLOCKS: BlockType[] = [
   "header",
@@ -125,8 +132,10 @@ function DesignTab({
         )}
       </button>
       {containersOpen && (
-        <div className="px-3 py-4 text-xs text-muted-foreground text-center border rounded-lg border-dashed">
-          Multi-column containers coming soon
+        <div className="px-3 pb-2 space-y-0.5">
+          {CONTAINER_TYPES.map(({ columns, label, icon: Icon }) => (
+            <DraggableContainerItem key={columns} columns={columns} label={label} icon={Icon} />
+          ))}
         </div>
       )}
 
@@ -143,6 +152,43 @@ function DesignTab({
           ))}
         </div>
       </div>
+    </div>
+  );
+}
+
+function DraggableContainerItem({
+  columns,
+  label,
+  icon: Icon,
+}: {
+  columns: number;
+  label: string;
+  icon: React.ElementType;
+}) {
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+    id: `sidebar-container-${columns}`,
+    data: { type: "sidebar-container", columnCount: columns },
+  });
+
+  return (
+    <div
+      ref={setNodeRef}
+      {...listeners}
+      {...attributes}
+      className={cn(
+        "flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-grab",
+        "border border-transparent hover:border-border hover:bg-muted/50",
+        "transition-all duration-150 select-none group",
+        isDragging && "opacity-40 scale-95"
+      )}
+    >
+      <span className="flex items-center justify-center w-8 h-8 rounded-md bg-muted/60 text-muted-foreground group-hover:text-foreground transition-colors">
+        <Icon className="h-4 w-4" />
+      </span>
+      <span className="flex-1 text-sm font-medium text-foreground/80 group-hover:text-foreground transition-colors">
+        {label}
+      </span>
+      <GripVertical className="h-4 w-4 text-muted-foreground/40 group-hover:text-muted-foreground transition-colors" />
     </div>
   );
 }

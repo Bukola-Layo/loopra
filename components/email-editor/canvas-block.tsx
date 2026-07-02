@@ -5,6 +5,7 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { cn } from "@/lib/utils";
 import { GripVertical, Trash2, ChevronUp, ChevronDown, Upload } from "lucide-react";
+import { RichTextToolbar } from "./rich-text-toolbar";
 import { type EmailBlock, BLOCK_TYPE_LABELS, anyToHtml } from "@/lib/email-builder";
 import { useEditorStore } from "@/store/use-editor-store";
 
@@ -230,6 +231,7 @@ function EditableContainer({
   className,
   style,
   placeholder,
+  richText,
 }: {
   value: string;
   isSelected: boolean;
@@ -237,18 +239,30 @@ function EditableContainer({
   className?: string;
   style?: React.CSSProperties;
   placeholder?: string;
+  richText?: boolean;
 }) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (ref.current && !isSelected) {
-      ref.current.textContent = value;
+    if (ref.current) {
+      if (richText) {
+        if (!isSelected || !ref.current.innerHTML) {
+          ref.current.innerHTML = value || placeholder || "";
+        }
+      } else {
+        ref.current.textContent = value || placeholder || "";
+      }
     }
-  }, [value, isSelected]);
+  }, [value, isSelected, richText, placeholder]);
 
   function handleBlur() {
-    const text = ref.current?.textContent?.trim() ?? "";
-    onBlur(text);
+    if (richText) {
+      const html = ref.current?.innerHTML?.trim() ?? "";
+      onBlur(html);
+    } else {
+      const text = ref.current?.textContent?.trim() ?? "";
+      onBlur(text);
+    }
   }
 
   return (
@@ -262,11 +276,18 @@ function EditableContainer({
       )}
       style={style}
       onBlur={handleBlur}
-      onKeyDown={(e) => { if (e.key === "Escape") { e.currentTarget.textContent = value; e.currentTarget.blur(); } }}
+      onKeyDown={(e) => {
+        if (e.key === "Escape") {
+          if (richText) {
+            e.currentTarget.innerHTML = value;
+          } else {
+            e.currentTarget.textContent = value;
+          }
+          e.currentTarget.blur();
+        }
+      }}
       onClick={(e) => e.stopPropagation()}
-    >
-      {value || placeholder || ""}
-    </div>
+    />
   );
 }
 
@@ -350,18 +371,26 @@ function BlockPreview({ block, isSelected, onUpdate }: BlockPreviewProps) {
 
     case "text":
       return (
-        <EditableContainer
-          value={c.text ?? ""}
-          isSelected={isSelected}
-          onBlur={(text) => set("text", text)}
-          className="py-2 px-8 whitespace-pre-wrap"
-          style={{
-            fontSize: `${c.fontSize ?? "16"}px`,
-            lineHeight: 1.6,
-            color: c.color ?? "#374151",
-          }}
-          placeholder="Enter your text here..."
-        />
+        <div className="relative">
+          {isSelected && (
+            <div className="absolute -top-8 left-2 z-30">
+              <RichTextToolbar />
+            </div>
+          )}
+          <EditableContainer
+            value={c.html ?? c.text ?? ""}
+            isSelected={isSelected}
+            onBlur={(html) => { set("html", html); if (!c.html) set("text", html.replace(/<[^>]*>/g, "")); }}
+            className="py-2 px-8"
+            style={{
+              fontSize: `${c.fontSize ?? "16"}px`,
+              lineHeight: 1.6,
+              color: c.color ?? "#374151",
+            }}
+            placeholder="Enter your text here..."
+            richText
+          />
+        </div>
       );
 
     case "image":

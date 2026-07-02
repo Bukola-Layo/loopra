@@ -25,6 +25,7 @@ export interface HeaderContent extends BlockStyles {
 
 export interface TextContent extends BlockStyles {
   text: string;
+  html?: string;
   fontSize: string;
   color: string;
   fontFamily?: string;
@@ -217,7 +218,7 @@ export function createBlock(type: BlockType): EmailBlock {
     case "header":
       return { id, type, content: { text: "Your Logo", fontSize: "24", alignment: "center", color: "#111827", logoSrc: "", logoWidth: "200", fontFamily: "", fontWeight: "700", letterSpacing: "" } } as EmailBlock;
     case "text":
-      return { id, type, content: { text: "Enter your text here...", fontSize: "16", color: "#374151", fontFamily: "", lineHeight: "1.6", fontWeight: "", letterSpacing: "" } } as EmailBlock;
+      return { id, type, content: { text: "Enter your text here...", html: "Enter your text here...", fontSize: "16", color: "#374151", fontFamily: "", lineHeight: "1.6", fontWeight: "", letterSpacing: "" } } as EmailBlock;
     case "image":
       return { id, type, content: { src: "/placeholder.svg", alt: "Image", width: "100%", linkTo: "" } } as EmailBlock;
     case "button":
@@ -323,7 +324,7 @@ function renderBlock(block: EmailBlock): string {
 
     case "text":
       return `<tr><td style="padding:${pad};font-size:${c.fontSize ?? "16"}px;color:${c.color ?? "#374151"};line-height:${c.lineHeight ?? "1.6"};${c.fontWeight ? `font-weight:${c.fontWeight};` : ""}${c.letterSpacing ? `letter-spacing:${c.letterSpacing}px;` : ""}font-family:${ff};"${extra}>
-        ${escapeHtml(c.text ?? "")}
+        ${c.html ? c.html : escapeHtml(c.text ?? "")}
       </td></tr>`;
 
     case "image": {

@@ -16,7 +16,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Users, Search, Upload, Download, ChevronRight, Plus, X, CheckCircle, AlertCircle, Mail, Calendar, Edit, Trash2 } from "lucide-react";
+import { Users, Search, Upload, Download, ChevronRight, Plus, X, CheckCircle, AlertCircle, Mail, Calendar, Edit, Trash2, HelpCircle, Send } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useOnboardingStore } from "@/store/use-onboarding-store";
 import { parseCSV, previewCSV, mapCSVToSubscribers, type CSVPreview, type FieldMapping } from "@/lib/csv";
@@ -432,15 +432,52 @@ export default function AudiencePage() {
           ))}
         </div>
       ) : subscribers.length === 0 ? (
-        <EmptyState
-          icon={<Users className="h-8 w-8" />}
-          title="No subscribers yet"
-          description="Add subscribers manually, import a CSV, or create a signup form to start building your audience."
-          action={{
-            label: "Add subscriber",
-            onClick: () => setDialogOpen(true),
-          }}
-        />
+        <div className="flex flex-col md:flex-row items-center justify-between bg-[#F9FAFB] rounded-2xl p-8 md:p-12 border overflow-hidden relative">
+          <div className="max-w-md space-y-6 z-10">
+            <div className="space-y-2">
+              <h2 className="text-3xl font-semibold tracking-tight text-slate-900">Add your contacts</h2>
+              <p className="text-slate-500 text-base leading-relaxed">
+                Contacts are the people who make up your audience. Import them from a CSV file or other apps, or let them subscribe using a form.
+              </p>
+            </div>
+            
+            <div className="flex flex-wrap items-center gap-3">
+              <Button onClick={() => setDialogOpen(true)} className="bg-[#0f766e] hover:bg-[#0f766e]/90 text-white font-medium px-6">
+                Add contacts
+              </Button>
+              <Button variant="outline" className="bg-white font-medium border-slate-200 text-slate-700 hover:bg-slate-50 px-6">
+                Create popup form
+              </Button>
+            </div>
+            
+            <div className="pt-2">
+              <a href="#" className="inline-flex items-center text-sm font-medium text-[#0f766e] hover:underline">
+                <HelpCircle className="h-4 w-4 mr-1.5" />
+                How to add contacts
+              </a>
+            </div>
+          </div>
+          
+          <div className="hidden md:flex relative h-[300px] w-[300px] items-center justify-center shrink-0 z-10 mt-8 md:mt-0">
+            <div className="absolute inset-0 rounded-full border border-dashed border-slate-300"></div>
+            
+            <div className="absolute top-0 right-4 w-[140px] h-[140px] rounded-full overflow-hidden border-4 border-white shadow-sm z-10 bg-slate-200">
+              <img src="https://images.unsplash.com/photo-1531123897727-8f129e1bf98c?q=80&w=300&auto=format&fit=crop" alt="Contact 1" className="w-full h-full object-cover" />
+            </div>
+            <div className="absolute bottom-6 left-2 w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-sm z-10 bg-slate-200">
+              <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=200&auto=format&fit=crop" alt="Contact 2" className="w-full h-full object-cover" />
+            </div>
+            <div className="absolute bottom-0 right-10 w-20 h-20 rounded-full overflow-hidden border-4 border-white shadow-sm z-10 bg-slate-200">
+              <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=200&auto=format&fit=crop" alt="Contact 3" className="w-full h-full object-cover" />
+            </div>
+            
+            <div className="absolute top-1/2 left-0 -translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-[#2d2926] rounded-full flex items-center justify-center shadow-md z-20">
+              <Send className="h-5 w-5 text-white" />
+            </div>
+            
+            <div className="absolute top-1/2 -left-16 w-16 border-t border-dashed border-slate-400 -z-10"></div>
+          </div>
+        </div>
       ) : (
         <>
           <div className="rounded-md border bg-white">

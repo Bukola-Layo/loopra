@@ -144,12 +144,60 @@ function BlockSpecificProperties({
       return (
         <div className="space-y-4">
           <PropertySection title="Content">
-            <textarea
-              value={c.text ?? ""}
-              onChange={(e) => set("text", e.target.value)}
-              className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 resize-y"
-              placeholder="Enter your text..."
-            />
+            <div className="space-y-2">
+              <div className="flex items-center gap-0.5 p-1 rounded-md border bg-muted/20">
+                <button
+                  type="button"
+                  onClick={() => set("html", wrapSelection(c.html ?? c.text ?? "", "b"))}
+                  className="p-1.5 rounded hover:bg-white text-muted-foreground hover:text-foreground transition-colors"
+                  title="Bold"
+                >
+                  <span className="text-xs font-bold">B</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => set("html", wrapSelection(c.html ?? c.text ?? "", "i"))}
+                  className="p-1.5 rounded hover:bg-white text-muted-foreground hover:text-foreground transition-colors"
+                  title="Italic"
+                >
+                  <span className="text-xs italic">I</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => set("html", wrapSelection(c.html ?? c.text ?? "", "u"))}
+                  className="p-1.5 rounded hover:bg-white text-muted-foreground hover:text-foreground transition-colors"
+                  title="Underline"
+                >
+                  <span className="text-xs underline">U</span>
+                </button>
+                <div className="w-px h-4 bg-border mx-0.5" />
+                <button
+                  type="button"
+                  onClick={() => set("html", wrapList(c.html ?? c.text ?? "", "ul"))}
+                  className="p-1.5 rounded hover:bg-white text-muted-foreground hover:text-foreground transition-colors"
+                  title="Bullet List"
+                >
+                  <span className="text-xs">•</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => set("html", wrapList(c.html ?? c.text ?? "", "ol"))}
+                  className="p-1.5 rounded hover:bg-white text-muted-foreground hover:text-foreground transition-colors"
+                  title="Numbered List"
+                >
+                  <span className="text-xs">1.</span>
+                </button>
+              </div>
+              <textarea
+                value={c.html ?? c.text ?? ""}
+                onChange={(e) => set("html", e.target.value)}
+                className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-mono ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 resize-y"
+                placeholder="Enter your text..."
+              />
+              <p className="text-[10px] text-muted-foreground">
+                Rich text editing available on canvas. HTML source shown here.
+              </p>
+            </div>
           </PropertySection>
           <PropertySection title="Styling">
             <div className="grid grid-cols-2 gap-2">
@@ -583,6 +631,15 @@ function PaddingInput({
       <span className="text-[10px] text-muted-foreground mt-0.5">{label}</span>
     </div>
   );
+}
+
+function wrapSelection(html: string, tag: string): string {
+  return `<${tag}>${html}</${tag}>`;
+}
+
+function wrapList(html: string, type: "ul" | "ol"): string {
+  const items = html.split("\n").filter(Boolean).map((line) => `<li>${line}</li>`).join("");
+  return `<${type}>${items}</${type}>`;
 }
 
 function ImageUploadArea({
