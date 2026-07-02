@@ -38,6 +38,7 @@ import {
   blocksToHtml,
   BLOCK_TYPE_LABELS,
 } from "@/lib/email-builder";
+import { uploadImage } from "@/lib/upload";
 
 const BLOCK_TYPES: BlockType[] = [
   "header",
@@ -413,15 +414,9 @@ function BlockFields({ block, onUpdate }: BlockFieldsProps) {
     onUpdate(block.id, { ...(block.content as unknown as Record<string, string>), [key]: value });
   }
 
-  function handleFile(file: File) {
+  function handleFile(file: File, key: string = "src") {
     if (!file.type.startsWith("image/")) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      if (typeof e.target?.result === "string") {
-        set("src", e.target.result);
-      }
-    };
-    reader.readAsDataURL(file);
+    uploadImage(file).then((url) => set(key, url)).catch(console.error);
   }
 
   function handleDrop(e: React.DragEvent) {
@@ -451,14 +446,7 @@ function BlockFields({ block, onUpdate }: BlockFieldsProps) {
               e.preventDefault();
               setDragOver(false);
               const file = e.dataTransfer.files?.[0];
-              if (file) {
-                if (!file.type.startsWith("image/")) return;
-                const reader = new FileReader();
-                reader.onload = (ev) => {
-                  if (typeof ev.target?.result === "string") set("logoSrc", ev.target.result);
-                };
-                reader.readAsDataURL(file);
-              }
+              if (file) handleFile(file, "logoSrc");
             }}
             onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
             onDragLeave={(e) => { e.preventDefault(); setDragOver(false); }}
@@ -485,14 +473,7 @@ function BlockFields({ block, onUpdate }: BlockFieldsProps) {
               className="hidden"
               onChange={(e) => {
                 const file = e.target.files?.[0];
-                if (file) {
-                  if (!file.type.startsWith("image/")) return;
-                  const reader = new FileReader();
-                  reader.onload = (ev) => {
-                    if (typeof ev.target?.result === "string") set("logoSrc", ev.target.result);
-                  };
-                  reader.readAsDataURL(file);
-                }
+                if (file) handleFile(file, "logoSrc");
               }}
             />
           </div>

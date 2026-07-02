@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
+import { uploadImage } from "@/lib/upload";
 
 export function EditorProperties() {
   const blocks = useEditorStore((s) => s.blocks);
@@ -85,13 +86,7 @@ function BlockSpecificProperties({
 
   function handleFile(file: File, key: string = "src") {
     if (!file.type.startsWith("image/")) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      if (typeof e.target?.result === "string") {
-        set(key, e.target.result);
-      }
-    };
-    reader.readAsDataURL(file);
+    uploadImage(file).then((url) => set(key, url)).catch(console.error);
   }
 
   switch (block.type) {

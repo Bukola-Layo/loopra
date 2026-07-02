@@ -8,6 +8,7 @@ import { GripVertical, Trash2, ChevronUp, ChevronDown, Upload } from "lucide-rea
 import { RichTextToolbar } from "./rich-text-toolbar";
 import { type EmailBlock, BLOCK_TYPE_LABELS, anyToHtml } from "@/lib/email-builder";
 import { useEditorStore } from "@/store/use-editor-store";
+import { uploadImage } from "@/lib/upload";
 
 type CanvasBlockProps = {
   block: EmailBlock;
@@ -307,13 +308,7 @@ function BlockPreview({ block, isSelected, onUpdate }: BlockPreviewProps) {
 
   function handleFile(file: File, key: string = "src") {
     if (!file.type.startsWith("image/")) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      if (typeof e.target?.result === "string") {
-        set(key, e.target.result);
-      }
-    };
-    reader.readAsDataURL(file);
+    uploadImage(file).then((url) => set(key, url)).catch(console.error);
   }
 
   switch (block.type) {
