@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { MarketingLayout } from "@/components/layout/marketing-layout";
 import { Button } from "@/components/ui/button";
+import { AcmeHero } from "@/components/ui/acme-hero";
 import { ArrowRight, Users, Mail, GitFork, BarChart3, Check } from "lucide-react";
 import { FaqItem } from "@/components/marketing/faq-item";
 import {
@@ -83,27 +84,7 @@ const plans = [
 export default function LandingPage() {
   return (
     <MarketingLayout>
-      <section className="container py-24 md:py-32 animate-fade-in-up">
-        <div className="mx-auto max-w-3xl text-center space-y-8">
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tight animate-float">
-            The easiest way to grow and automate{" "}
-            <span style={{ color: "var(--color-role-primary)" }}>
-              audience communication
-            </span>
-          </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Loopra helps creators, startups, and small businesses collect subscribers,
-            send newsletters, and build automation workflows — all in one place.
-          </p>
-          <div className="flex items-center justify-center gap-4">
-            <Link href="/signup">
-              <Button size="lg" className="gap-2">
-                Get started free <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
+      <AcmeHero />
 
       <section className="border-t py-24 animate-fade-in-up" style={{ animationDelay: "0.2s" }}>
         <div className="container">
