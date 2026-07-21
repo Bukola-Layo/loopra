@@ -49,7 +49,7 @@ const badgeVariants = {
     y: 0,
     transition: { duration: 0.5, ease: "easeOut" },
   },
-};
+} as const;
 
 const primaryColor = "hsl(348, 83%, 55%)";
 const accentColor = "#2cadc0";
