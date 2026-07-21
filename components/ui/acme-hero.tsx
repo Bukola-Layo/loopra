@@ -21,7 +21,7 @@ const containerVariants = {
       delayChildren: 0.2,
     },
   },
-};
+} as const;
 
 const itemVariants = {
   hidden: { opacity: 0, y: 30 },
@@ -30,7 +30,7 @@ const itemVariants = {
     y: 0,
     transition: { duration: 0.6, ease: [0.25, 0.1, 0.25, 1] },
   },
-};
+} as const;
 
 const imageVariants = {
   hidden: { opacity: 0, y: 60 },
@@ -39,7 +39,7 @@ const imageVariants = {
     y: 0,
     transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] },
   },
-};
+} as const;
 
 const badgeVariants = {
   hidden: { opacity: 0, scale: 0.9, y: -10 },
